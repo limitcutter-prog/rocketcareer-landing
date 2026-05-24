@@ -376,9 +376,9 @@
 
         <!-- 후기 통계 -->
         <div class="review-stat-bar">
-          <div class="rstat"><span class="rstat-num">35+</span><span class="rstat-label">K 플랫폼 검증 후기</span></div>
+          <div class="rstat"><span class="rstat-num">300+</span><span class="rstat-label">K 플랫폼 검증 후기</span></div>
           <div class="rstat-div"></div>
-          <div class="rstat"><span class="rstat-num">4.9<span style="font-size:1rem">점</span></span><span class="rstat-label">평균 평점</span></div>
+          <div class="rstat"><span class="rstat-num">4.9<span style="font-size:1rem">점</span></span><span class="rstat-label">평균 평점</span><span style="font-size:0.72rem; color:rgba(255,255,255,0.55); display:block; margin-top:2px;">5점 만점</span></div>
           <div class="rstat-div"></div>
           <div class="rstat"><span class="rstat-num">374건</span><span class="rstat-label">누적 멘토링</span></div>
           <div class="rstat-div"></div>
@@ -410,7 +410,7 @@
 
         <!-- 필터 탭 -->
         <div class="review-tabs">
-          <button class="rtab active" onclick="filterReviews('all', this)">전체 (35)</button>
+          <button class="rtab active" onclick="filterReviews('all', this)">전체 (300+)</button>
           <button class="rtab" onclick="filterReviews('resume', this)">경력기술서</button>
           <button class="rtab" onclick="filterReviews('coverletter', this)">자기소개서</button>
           <button class="rtab" onclick="filterReviews('makeup', this)">4주 커리어 설계</button>
@@ -769,11 +769,7 @@
 
               <div class="form-row-2">
                 <div class="form-group">
-                  <label class="form-label" for="target_role">3. 목표 직무 <span class="required">*</span></label>
-                  <input type="text" id="target_role" name="target_role" class="form-input" placeholder="예: 마케팅 기획, HR, 영업관리, IT 기획 등" required />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">4. 현재 경력 연차 <span class="required">*</span></label>
+                  <label class="form-label">3. 현재 경력 연차 <span class="required">*</span></label>
                   <select name="years" class="form-select" required>
                     <option value="">선택해주세요</option>
                     <option value="신입 (무경력)">신입 (무경력)</option>
@@ -782,6 +778,10 @@
                     <option value="8~10년">8~10년</option>
                     <option value="10년 이상">10년 이상</option>
                   </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="target_role">4. 목표 직무 <span class="required">*</span></label>
+                  <input type="text" id="target_role" name="target_role" class="form-input" placeholder="예: 마케팅 기획, HR, 영업관리, IT 기획 등" required />
                 </div>
               </div>
 
@@ -878,7 +878,7 @@
                     </div>
                     <div class="form-group">
                       <label class="form-label" for="job_deadline">채용공고 마감일</label>
-                      <input type="date" id="job_deadline" name="job_deadline" class="form-input" />
+                      <input type="text" id="job_deadline" name="job_deadline" class="form-input" placeholder="예: 2026-08-31" maxlength="10" />
                     </div>
                   </div>
                   <div class="form-group" style="margin-top:8px;">
@@ -1028,7 +1028,7 @@
               <span class="faq-arrow">+</span>
             </button>
             <div class="faq-a">
-              <p>네, 가능합니다! K 플랫폼(크몽)에서도 동일한 서비스를 이용하실 수 있으며, 실제로 지금까지 올라온 35건 이상의 후기도 크몽에서 확인하실 수 있습니다.</p>
+              <p>네, 가능합니다! K 플랫폼(크몽)에서도 동일한 서비스를 이용하실 수 있으며, 실제로 지금까지 올라온 300건 이상의 후기도 크몽에서 확인하실 수 있습니다.</p>
               <p>크몽의 안전 결제 시스템을 선호하시는 분들은 크몽을 통해 신청하시면 됩니다.</p>
               <p style="margin-top:8px;"><a href="https://kmong.com/@%EB%A1%9C%EC%BC%93%EC%BB%A4%EB%A6%AC%EC%96%B4%EC%97%B0%EA%B5%AC%EB%A9%98%ED%86%A0" target="_blank" class="faq-link">👉 K 플랫폼(크몽) 프로필 방문하기</a></p>
             </div>

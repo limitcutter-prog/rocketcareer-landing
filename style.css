@@ -61,7 +61,7 @@ ul  { list-style: none; }
 .btn-lg   { padding: 16px 32px;  font-size: 1rem; }
 .btn-full { width: 100%; justify-content: center; }
 
-.btn-primary { background: var(--navy); color: var(--white); }
+.btn-primary { background: var(--navy); color: var(--white); padding: 12px 24px; }
 .btn-primary:hover { background: var(--navy2); box-shadow: var(--shadow); }
 
 .btn-accent { background: var(--green); color: var(--white); }
