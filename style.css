@@ -214,12 +214,12 @@ ul  { list-style: none; }
 }
 .proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .proof-card {
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 10px;
   background: var(--white); border-radius: var(--radius);
-  padding: 20px; box-shadow: var(--shadow-sm);
+  padding: 16px 14px; box-shadow: var(--shadow-sm);
 }
-.proof-icon { font-size: 1.8rem; flex-shrink: 0; }
-.proof-text { font-size: .88rem; line-height: 1.5; color: var(--gray-5); }
+.proof-icon { font-size: 1.6rem; flex-shrink: 0; }
+.proof-text { font-size: .82rem; line-height: 1.45; color: var(--gray-5); }
 .proof-text strong { color: var(--navy); display: block; margin-bottom: 2px; }
 
 /* ════════════════════════════════════════════
