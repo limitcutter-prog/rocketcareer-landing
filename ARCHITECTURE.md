@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-23 (sync-arch — 미문서 모듈 3종 추가, 영상 렌더 API 구현 상태 정정)
+마지막 업데이트: 2026-05-29 (렌더 상태 UI 연동·승인→자동렌더 완료 / TTS OpenSSL 3.0 버그 수정 / 미결과제 2건 ✅ / scripts/ 유틸 스크립트 정식 추적)
 
 ---
 
@@ -13,12 +13,12 @@
 | # | 모듈 | 상태 | 담당 에이전트 | 주요 경로 |
 |---|-----|:---:|------------|---------|
 | 1 | 구간3 파이프라인 | 🔒 FROZEN | — | `admin-tool/app/api/submit-diagnosis/`, `inbox/`, `send-email/` |
-| 2 | 마케팅 자동화 | ✅ ACTIVE | marketing-db-agent | `admin-tool/app/api/content/`, `lib/script-generator.ts` |
+| 2 | 마케팅 자동화 | ✅ ACTIVE | marketing-db-agent | `admin-tool/app/api/content/`, `lib/marketing/script-generator.ts` |
 | 3 | 어드민 UI | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/admin/` |
 | 4 | 대시보드 | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/dashboard/` |
 | 5 | 트렌드/Bitly | ✅ ACTIVE | marketing-db-agent | `admin-tool/app/api/trends/`, `admin-tool/app/api/bitly/` |
 | 6 | 멘토 관리 | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/mentors/` |
-| 7 | 영상 자동생성 (Remotion Lambda) | ✅ ACTIVE | — | `admin-tool/lib/video-generator.ts`, `admin-tool/remotion/` |
+| 7 | 영상 자동생성 (Remotion Lambda) + TTS 나레이션 | ✅ ACTIVE | — | `admin-tool/lib/marketing/video-generator.ts`, `lib/marketing/tts-generator.ts`, `admin-tool/remotion/` (ShortsVideo + CaseFileVideo v7) |
 | 8 | 멘토 인코딩 DB | ✅ ACTIVE | encoding-agent | `Mento_incoding_casedb_project/henry-casedb/` |
 | 9 | 랜딩페이지 | ✅ ACTIVE | landing-agent | `index.html`, `style.css` |
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
@@ -78,11 +78,13 @@ POST   /api/content/[id]/skip        ← 스킵 (body.reason → skip_reason 저
 POST   /api/content/[id]/autoreview  ← 자동검수 STEP3+4 실행 (autoReview + reviseScript)
 POST   /api/content/[id]/video       ← 영상 렌더 시작 → render_id 반환
 GET    /api/content/[id]/video       ← 렌더 상태 조회 (?render_id=xxx)
+POST   /api/content/[id]/tts         ← TTS 나레이션 생성 → audio_urls + durations 반환
+POST   /api/content/[id]/casevideo   ← 케이스 → 대본→검수→TTS→조립→렌더 전 과정 자동 (오케스트레이터)
 GET    /api/content/cases            ← 큐레이션용 케이스 후보 목록
 PATCH  /api/content/cases/[caseId]   ← 케이스 큐레이션 토글 (content_priority)
 ```
 
-**4단계 생성 파이프라인 (`lib/script-generator.ts`):**
+**4단계 생성 파이프라인 (`lib/marketing/script-generator.ts`):**
 ```
 STEP 1. buildStrategy()  — 벤치마크 9항목 검토 → ContentStrategy 6항목 확정
 STEP 2. buildScript()    — 전략 + 벤치마크 원본 주입 → 쇼츠+롱폼 초안
@@ -106,9 +108,9 @@ bitly_clicks     — Bitly 클릭 수집
 
 **핵심 파일:**
 ```
-admin-tool/lib/script-generator.ts  ← 4단계 파이프라인 (변경 시 어드민UI 전체 영향)
-admin-tool/lib/content-scorer.ts    ← cases_career 스코어링 (큐레이션 우선 → 점수순)
-admin-tool/lib/market-signal.ts     ← 시장 신호 (현재 하드코딩)
+admin-tool/lib/marketing/script-generator.ts  ← 4단계 파이프라인 (변경 시 어드민UI 전체 영향)
+admin-tool/lib/marketing/content-scorer.ts    ← cases_career 스코어링 (큐레이션 우선 → 점수순)
+admin-tool/lib/marketing/market-signal.ts     ← 시장 신호 (현재 하드코딩)
 ```
 
 **콘텐츠 믹스 전략:** 포괄형 2개 + 특화형 1개 세트 (세 개 단위로 생성)
@@ -200,10 +202,13 @@ DELETE /api/mentors/[id]     ← 멘토 삭제
 **렌더 스택:**
 ```
 Remotion Lambda (AWS ap-northeast-2)
-Pexels API  — 포맷별 배경 클립 3개 (portrait HD 우선, 랜덤 5개 중 1개)
+Pexels API     — ShortsVideo 전용 배경 클립 3개 (portrait HD, 랜덤 5개 중 1개)
+브랜드 네이비  — CaseFileVideo 전용 순수 #1B2B4B 배경 (Pexels 불필요)
 ```
 
-**지원 포맷 5종:**
+**컴포지션 2종:**
+
+**① ShortsVideo — 5포맷 쇼츠 (기존)**
 ```
 TIMELINE     — 커리어 여정 타임라인 (번호 뱃지)
 BEFORE_AFTER — 이력서 비포/애프터 비교 (✗/✓ 컬러 분리)
@@ -211,53 +216,225 @@ CHECKLIST    — HR담당자 체크리스트
 INSIDER      — 채용 내부 정보 (인용 스타일)
 REVERSAL     — 반전 인사이트 (취소선 애니메이션)
 ```
+hook_type 3종 시각 변형: 숫자형 / 반전형 / 공감형
 
-**hook_type 3종 (훅 씬 시각 변형):**
+**② CaseFileVideo — 익명 케이스 파일 시리즈 (v7, 2026-05-25 풀스크린 재설계)**
 ```
-숫자형 — 좌측 원형 뱃지 + # 아이콘
-반전형 — 취소선 + 진실 텍스트 등장
-공감형 — 대형 따옴표 배경 + 인용 스타일
+구조(5씬): HOOK → CASE CONTEXT → PAIR×N(BEFORE/AFTER) → CLOSING → CTA
+  씬별 길이는 timing override + pair.duration으로 개별 제어(TTS 실측에 맞춤)
+v7 핵심:
+  - 숫자 강조: highlightMetrics() — 숫자/단위/화살표를 앰버(#FFC83D)로 자동 강조
+  - BEFORE/AFTER 카드화: parseQuote()로 나레이션·인용구 분리, 빨강/초록 컨테이너
+  - 초점 이동: DIFF(인사이트) 등장 시 B/A 흐려지며 위로, "⚡인사담당자 포인트" 확대
+  - 풀스크린(안전영역 14~94%) + 배경 깊이(그리드/글로우/비네팅) + 하단 워터마크
+  - 씬 진행 막대(SceneProgressBar)로 정지 구간 속도감 보강
+```
+
+**TTS 나레이션 (lib/marketing/tts-generator.ts) — v7 신규:**
+```
+프로바이더 2종:
+  google(기본) — ko-KR-Chirp3-HD-Zubenelgenubi (남성, 저음 안정). 서비스계정 JWT 재사용
+                 (cloud-platform scope). Chirp3-HD는 SSML/pitch 미지원 → speakingRate +
+                 문장부호 리듬으로 톤 제어. 톤앤매너: 인사담당자 안정감, 하강조 평서형 통일
+  polly        — Seoyeon(여성, neural). SSML prosody rate + break 지원
+씬별 MP3 → Supabase Storage(tts-audio 버킷, public) → 공개 URL + 실측 duration 반환
+  generateSceneTTS(id, scenes, voiceCfg) / buildTTSScenes(props) / cleanForTTS()
 ```
 
 **핵심 파일:**
 ```
-admin-tool/lib/video-generator.ts               ← startRender(), getRenderStatus()
-admin-tool/remotion/compositions/ShortsVideo.tsx ← 메인 컴포지션
-admin-tool/remotion/Root.tsx                    ← Composition 등록 (id: "ShortsVideo")
-admin-tool/remotion/lib/                        ← fonts.ts (브랜드 컬러), timing.ts
+admin-tool/lib/marketing/video-generator.ts                  ← startRender(), startCaseFileRender(context/timing/audio 전달), getRenderStatus()
+admin-tool/lib/marketing/tts-generator.ts                    ← generateSceneTTS(), buildTTSScenes() (Polly+Google). ⚠️ parseGooglePrivateKey() OpenSSL 3.0 호환 처리 필수 (\\n 무조건 변환·\r 제거)
+admin-tool/remotion/compositions/ShortsVideo.tsx   ← ShortsVideo 컴포지션 (5포맷)
+admin-tool/remotion/compositions/CaseFileVideo.tsx ← CaseFileVideo 컴포지션 (v7, 5씬)
+admin-tool/remotion/Root.tsx                       ← Composition 등록 (ShortsVideo + CaseFileVideo 3종)
+admin-tool/remotion/lib/                           ← fonts.ts (브랜드 컬러), timing.ts
+admin-tool/scripts/regen-tts-male.mjs              ← 남성 TTS 재생성 + duration 측정 유틸
+admin-tool/scripts/                               ← 개발용 유틸 스크립트 모음 (test-pipeline, test-tts, render-json, check-render 등 15개+, 배포 무관)
 ```
 
-**브랜드 컬러:** `#1B2B4B` (네이비 배경) / `#27AE60` (그린 포인트)
+**브랜드 컬러:** `#1B2B4B`(네이비) / `#27AE60`(그린) / `#FFC83D`(앰버 — 숫자·인사이트 강조) / `#FF5C5C`(빨강 — BEFORE)
 
 **환경변수:**
 ```
-REMOTION_FUNCTION_NAME
-REMOTION_SERVE_URL
-REMOTION_AWS_REGION   (기본: ap-northeast-2)
-PEXELS_API_KEY
+REMOTION_FUNCTION_NAME  (현재: ...mem3008mb-disk2048mb-600sec — 긴 영상용 600초 함수)
+REMOTION_SERVE_URL (case-file-v2), REMOTION_S3_BUCKET
+REMOTION_AWS_REGION (기본: ap-northeast-2)
+REMOTION_AWS_ACCESS_KEY_ID / REMOTION_AWS_SECRET_ACCESS_KEY  ← Lambda + Polly TTS 공용
+PEXELS_API_KEY        (ShortsVideo만 필요)
+GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_PRIVATE_KEY  ← Google TTS(재사용, cloud-platform scope)
+NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY  ← TTS 오디오 Storage 업로드/URL
 ```
+> ⚠️ Google TTS: GCP 프로젝트(950271061818) `texttospeech.googleapis.com` 활성화 완료(2026-05-25)
+> ⚠️ Polly: remotion-user IAM에 `PollyAccess` 관리형 정책 연결 완료
+
+**Lambda 사이트:** `case-file-v2` (S3, Audio 컴포넌트 포함)
 
 **렌더 API (`/api/content/[id]/video`):**
 ```
-POST → startRender() 호출, render_id 반환
-GET  → getRenderStatus() 조회, renderUrl(완료시) 반환
+POST (body: { type?: 'shorts' | 'case_file', context?, audio? })
+  → type='shorts'    : startRender()          — insight_lines(string[]) 기반
+  → type='case_file' : startCaseFileRender()  — insight_lines(BeforeAfterPair[]) + context/audio
+GET  (?render_id=xxx) → getRenderStatus() 조회, outputFile(완료시) 반환
 ```
 
-**미구현:**
-- 어드민 UI에서 렌더 진행률 폴링 표시 (API는 구현됨, UI 연결 필요)
-- YouTube 자동 업로드 (Phase 3)
+**TTS API (`/api/content/[id]/tts`):**
+```
+POST (body A: { scenes: TTSScene[], voice? } / body B: { props, voice? })
+  → generateSceneTTS → { audio_urls, durations, scene_count, voice }
+  voice 기본값: { provider:'google', googleVoice:'ko-KR-Chirp3-HD-Zubenelgenubi', rate:1.2 }
+```
+
+**CaseFileVideo DB 연동:**
+```
+insight_lines 컬럼에 BeforeAfterPair[] JSONB 배열 저장
+  형태: [{ before, after, diff, duration? }, ...]
+case_number: title에서 숫자 추출, 없으면 id 앞 6자리 해시
+TODO: content_queue에 job_role·career_level·industry·situation 컬럼 추가 시 context 자동 구성
+```
+
+**양산 파이프라인 (판단=스킬·코드 / 실행=코드) — 오케스트레이터 완료:**
+```
+runCaseFilePipeline(CaseInput) — lib/marketing/casefile-pipeline.ts
+  → ① generateCaseFileScript (Claude, 10룰)   케이스 → props + ttsScenes
+  → ② reviewCaseFileScript   (Claude, 3관점)  검수, 실패 시 1회 재생성
+  → ③ generateSceneTTS + trimSilence          나레이션 → audio + 실측 duration
+  → ④ assembleProps                            duration/timing/audio 자동 주입(핸드오프)
+  → ⑤ startCaseFileRender → Lambda → mp4
+```
+- 통합 API: `POST /api/content/[id]/casevideo`
+  - body A(어드민 권장): `{ case_id, case_number?, maxPairs?, voice?, qa?, render? }` → cases_career 자동 매핑
+  - body B(직접): `{ case: CaseInput, ... }`
+- 스킬(Claude Code용): `.claude/commands/casefile-script.md`, `casefile-qa.md`
+- 핵심 파일: `lib/marketing/casefile-script.ts`(대본+검수), `lib/marketing/casefile-pipeline.ts`(오케스트레이터), `lib/marketing/silence-trim.ts`(공백제거), `lib/marketing/casefile-input-mapper.ts`(cases_career→CaseInput), `lib/marketing/casefile-benchmark.ts`(트렌드 훅 패턴 힌트)
+- 트렌드 지능 이식: `buildBenchmarkHint()`가 trend_benchmarks 훅 패턴을 "[참고 트렌드]"로 주입 (참고용, 룰 우선 안 함, 폴백). 훅 후보 `hook_candidates` 2~3개 생성(선택용). ①(script-generator)의 벤치마크 가치를 ②에 additive로 반영 — ②의 13룰 무손상
+- 음성 공백제거: `@ffmpeg-installer/ffmpeg`의 `silenceremove`(threshold -50dB 필수, -38dB는 단어 붙음)
+- **상세 프로세스: `admin-tool/CASEFILE_PIPELINE.md`** / 10룰·v7: `remotion/CLAUDE.md` / 톤: memory
+- 🧱 **코드 경계(분리 준비, 2026-05-26)**: 무거운 마케팅 로직 11개 파일을 `admin-tool/lib/marketing/`에 격리 (`lib/marketing/README.md`). 외부 접점은 `lib/supabase`(데이터)·remotion 타입뿐. FROZEN 무관. → 향후 **marketing-engine**(별도 호스트)으로 추출 단위.
+- 🧱 **잡 큐 계약**: `content_queue.casefile_status` = `queued→script→qa→tts→render→done|failed`. `enqueueCaseFileJob()` seam 준비됨(현재 미사용 — 엔진 없어 버튼은 인라인 유지). 분리 로드맵·계약: `CASEFILE_PIPELINE.md` "잡 큐 계약".
+
+**어드민 연동 진행 상황:**
+- ✅ content_queue 컬럼 추가 SQL (casefile_props/tts_scenes/audio_urls/scene_durations/voice_config/render_id/casefile_status/qa_result) → `supabase-marketing-setup.sql` (⚠️ **재실행 필요**)
+- ✅ `cases_career → CaseInput` 매핑 (`lib/marketing/casefile-input-mapper.ts`) — improvements→pairs, reason·what_hr_thinks(왜 근거) 보존
+- ✅ `/casevideo` body A(case_id) 자동 매핑 지원
+- ✅ 파이프라인 결과 → content_queue 저장 (`lib/marketing/casefile-store.ts`, UPDATE-by-id, opts.contentId)
+- ✅ 어드민 "📁 케이스파일 영상" 버튼 (`review/page.tsx` `handleGenerateCaseVideo` → `/casevideo` body C)
+- ✅ 운영 노브 설정 패널 (음성 남/여·속도·pair수, localStorage 영속 → /casevideo body 전달)
+- ✅ 시각 점검: 오버플로/줄깨짐 없음 (verbose 케이스 밀도만 주의)
+- ✅ **렌더 상태 어드민 UI 연동 (2026-05-29)**: `render_id` content_queue DB 저장 → 페이지 새로고침 후 폴링 자동 복원(`useEffect`+`resumedRef`). `pollRender()` 헬퍼로 3곳 중복 제거. `casefileStageLabel()` 스테이지 한국어 라벨(queued→script→qa→tts→render→done).
+- ✅ **승인 → 자동 ShortsVideo 렌더 (2026-05-29)**: `approve/route.ts` — `casefile_props` 없는 아이템만 `startRender()` 호출 후 `render_id` DB 저장. `maxDuration=30` 명시. CaseFile 아이템은 `/casevideo` 파이프라인 전용 유지.
+- 📋 BGM 트랙 / YouTube 자동 업로드
+
+---
+
+### 🎚️ 모듈 7-A — 영상 생성 설정 레지스트리 (단일 진실 소스, 2026-05-25)
+
+> **목적:** 템플릿·음성·길이·룰 등 모든 결정값을 한 곳에 박제해, 어드민/경로 변경 시 누락·충돌 방지.
+> **원칙:** "룰·알고리즘은 코드 고정(품질 보증), 운영 노브만 어드민 노출". 아래 값이 곧 production 기준값.
+
+#### (1) 템플릿
+| 항목 | 값 | 출처(SoT) |
+|---|---|---|
+| CaseFile 컴포지션 | **CaseFileVideo v7.1** (5씬 + 글리프 안전) | `remotion/compositions/CaseFileVideo.tsx` |
+| Shorts 컴포지션 | ShortsVideo (구형 5포맷) | `remotion/compositions/ShortsVideo.tsx` |
+| Lambda 사이트 | `case-file-v2` (두 컴포지션 모두 포함) | env `REMOTION_SERVE_URL` |
+| 동적 길이 | `CaseFileVideo` 컴포지션에 `calculateMetadata`로 props 기준 길이 계산 (없으면 기본 props 길이로 고정돼 잘림) | `Root.tsx` |
+| ⚠️ 재배포 규칙 | CaseFileVideo.tsx/Root.tsx 변경 시 **반드시** `lambda sites create --site-name=case-file-v2` 재배포 | — |
+| 🔴 글리프 안전 | 이모지/기호(🚀✗✓✦⭐👇⌄↓ curly“”) **금지** — Lambda Chrome엔 폰트 없어 tofu(□). 화살표=CSS삼각형, 따옴표=직선`"`. **로컬 아닌 Lambda 렌더로 검증** | `remotion/CLAUDE.md` |
+| 취소선 | `textDecorationLine:'line-through'`(다줄 전체), 알파 애니메이션 | `CaseFileVideo.tsx` ExcerptCard |
+
+#### (2) 음성 (DEFAULT_VOICE)
+| 항목 | 값 | 출처(SoT) |
+|---|---|---|
+| provider | `google` | `lib/marketing/casefile-pipeline.ts` DEFAULT_VOICE |
+| voice | `ko-KR-Chirp3-HD-Zubenelgenubi` (남, 저음 안정) | 〃 |
+| rate | `1.2` (말꼬리 상승 방지) | 〃 |
+| pitch | `0` (Chirp3-HD는 pitch·SSML 미지원) | 〃 |
+| trim(공백제거) | `true` | 〃 / `lib/marketing/tts-generator.ts` |
+| 대체(여) | Polly `Seoyeon` (provider:'polly') | `lib/marketing/tts-generator.ts` |
+
+#### (3) 음성 공백제거 (silence-trim)
+| 항목 | 값 | 출처(SoT) |
+|---|---|---|
+| 필터 | `silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-50dB:detection=peak` | `lib/marketing/silence-trim.ts` |
+| ⚠️ threshold | **-50dB 고정** (-38dB는 단어 끝을 먹어 단어 붙음/어눌) | 〃 |
+| 바이너리 | `@ffmpeg-installer/ffmpeg` (Remotion 번들엔 silenceremove 없음) | 〃 |
+
+#### (4) 길이/타이밍
+| 항목 | 값 | 출처(SoT) |
+|---|---|---|
+| duration 산식 | 씬 실측초 + 0.4s(페이드 버퍼) | `lib/marketing/casefile-pipeline.ts` `assembleProps` |
+| timing.pair 기본 | pair duration 평균 | 〃 |
+| 나레이션 자수 예산 | hook≤45자·context≤70자·pair≤70자(4문장)·closing≤55자·cta≤80자, **전체 45~70s** | `lib/marketing/casefile-script.ts` 룰11 |
+| 맞춤법/모드 | 룰12 출력 전 오탈자 점검 / 룰13 mode(universal·specific) | 〃 |
+| ⚠️ totalCaseFrames | 호출 시 **timing 인자 필수** (Lambda는 calculateMetadata가 처리) | `Root.tsx`/`CaseFileVideo.tsx` |
+
+#### (5) 폰트·컬러 (v7)
+```
+TITLE 102 / HOOK 82 / BODY 56 / LABEL 38 / META 33   (CaseFileVideo.tsx)
+bg #1B2B4B · green #27AE60 · ACCENT(앰버) #FFC83D · RED #FF5C5C
+```
+
+#### (6) 콘텐츠 10룰 (대본 품질)
+- 코드 SoT: `lib/marketing/casefile-script.ts` SYSTEM_PROMPT (Claude 호출 시 적용)
+- 문서 SoT: `remotion/CLAUDE.md` "콘텐츠 작성 룰" + `.claude/commands/casefile-script.md`
+- 톤앤매너: memory `feedback_tone_voice` / `project_shorts_production`
+- ⚠️ 룰 변경 시 **세 곳 동시 갱신** (코드 프롬프트 / remotion CLAUDE.md / 스킬 md)
+
+#### (7) 렌더 옵션
+```
+codec h264 · imageFormat jpeg · framesPerLambda 500 · maxRetries 2 · downloadBehavior play-in-browser
+Lambda 함수: remotion-render-4-0-465-mem3008mb-disk2048mb-600sec (timeout 600s)
+```
+출처: `lib/marketing/video-generator.ts` `startCaseFileRender` / env `REMOTION_FUNCTION_NAME`
+- ⚠️ 긴/무거운 영상은 240초 함수에서 timeout → **600초 함수 필수**. framesPerLambda는 300(동시성↑ rate-limit)와 1000(청크당 timeout) 사이 **500이 균형**.
+- ⚠️ 한 번에 여러 렌더 동시 발사 시 AWS 동시성 rate-limit. 운영은 순차 권장.
+
+---
+
+### ⚠️ 경로 정합 — OLD vs NEW (충돌 방지 결정)
+
+현재 영상 생성 경로가 2개 공존. **혼동 시 구형 영상이 나오므로 정합 규칙을 고정한다.**
+
+| 경로 | 트리거(현재) | 컴포지션 | 음성/룰/duration | 상태 |
+|---|---|---|---|---|
+| `POST /video` (body 없음) | 어드민 "영상 생성" 버튼(`review/page.tsx` `handleGenerateVideo`) | **ShortsVideo(구형)** | 없음 | ⚠️ 구형 — 신규 작업 미반영 |
+| `POST /video` (`type:case_file`) | (호출처 없음) | CaseFileVideo | body.audio만, **timing/duration 없음** | 🔴 불완전 — 사용 금지 |
+| `POST /casevideo` | (아직 버튼 미연결) | **CaseFileVideo v7** | 파이프라인 전체 적용 | ✅ 정합(유일한 권장 경로) |
+
+**🔒 정합 결정 (고정):**
+1. **CaseFileVideo는 오직 `/casevideo`(runCaseFilePipeline) 경유로만 생성.** `/video`의 case_file 분기는 **deprecated**(불완전, 사용 금지).
+2. **어드민 CaseFile 버튼은 `/casevideo`로 연결해야 함** — ✅ `cases_career → CaseInput` 매핑 완료(`casefile-input-mapper.ts`). 이제 어드민 버튼을 `POST /casevideo { case_id }`로 연결 가능. (구형 `/video` case_file 경로는 여전히 금지)
+3. 어드민 버튼이 ShortsVideo를 계속 쓰려면 그대로 둠(별개 트랙). **CaseFile과 혼선 금지.**
+4. 위 (1)~(7) 설정값은 어드민에서 **표시(읽기)**만 하고, 운영 노브(음성·길이)만 추후 제어 노출. 룰·알고리즘은 코드 고정.
+
+> ⚠️ 어드민 연동 작업 시 이 표를 먼저 확인. 새 버튼이 `/video`로 case_file을 호출하면 안 됨(불완전 경로).
 
 ---
 
 ### ✅ 모듈 8 — 멘토 인코딩 DB
 
-**역할:** 과거 멘토링 케이스 원본 파일 → 구조화된 cases_career Supabase 레코드
+**역할:** 과거 멘토링 케이스 원본 파일 → 구조화된 cases_career Supabase 레코드 + RAG 벡터 검색
+
+**현황 (2026-05-26):** cases_career 29건 / rules_career 173건(active 168) / 임베딩 29건 완료(100%)
+> 미처리 5건: case-024(JSON파싱-특수문자), case-048(크레딧소진·재시도대기), case-056·102(이미지PDF), case-084(원본없음)
 
 **폴더 구조:**
 ```
 henry-casedb/
-├── cases/career/          ← 인코딩 완료 케이스
-└── cases/_needs_review/   ← 검수 대기 (다수 잔존, 인코딩 규칙 검증 필요)
+├── sync_dashboard.pyw          ← GUI 현황판 (더블클릭 실행) — 로컬 vs DB 대조, 분석 실행 버튼
+├── cases/career/               ← 케이스 폴더 38개 (DB 22건, 16건 처리 대기)
+│   ├── case-XXX/               ← before.docx + after.docx + meta.json
+│   └── _needs_review/          ← 분류 불가 케이스 검수 대기
+├── output/career/analyses/     ← 분석 JSON 로컬 백업 22건
+└── scripts/
+    ├── [배치] batch_process.py, analyze_case.py, store_case.py, classifier.py
+    ├── [동기화] sync_cases.py, watcher.py, status_check.py  ← 2026-05-16 신규
+    ├── [RAG]   embed_cases.py, search_similar.py            ← 2026-05-16 신규
+    ├── [운영]  weekly_routine.py                            ← 2026-05-16 신규
+    └── migrations/
+        ├── 001_add_is_active_to_rules.sql   ✅ 실행 완료
+        └── 002_add_embedding_to_cases.sql   ✅ 실행 완료
 ```
 
 **cases_career 주요 컬럼 (마케팅 자동화 인터페이스 — 변경 시 즉시 통보):**
@@ -269,9 +446,25 @@ improvements[], weaknesses_before[], weaknesses_remaining[]
 anonymized_before/after, job_category, career_years
 outcome, outcome_days, content_priority(영석님 큐레이션 별표)
 layer1~7_before/after (14개 컬럼)
+embedding vector(384)  ← RAG 벡터 (paraphrase-multilingual-MiniLM-L12-v2, 2026-05-16 추가)
+```
+
+**rules_career 주요 컬럼:**
+```
+layer, pattern, inference, fix, frequency, case_ids[]
+is_active BOOLEAN  ← 2026-05-16 추가 (케이스 삭제 시 frequency=0→FALSE 자동 처리)
+```
+
+**RAG 인프라 (2026-05-16 구축):**
+```
+Supabase RPC: search_similar_cases(query_embedding, match_count, job_filter, min_quality_after)
+  → 코사인 유사도 top-N 케이스 반환 (ivfflat 인덱스)
+연동: ver1-resume-writer SKILL.md §0 — 경력기술서 작성 전 자동 RAG 조회
 ```
 
 > ⚠️ 컬럼 추가·삭제·이름변경 시 `content-scorer.ts`가 직접 참조하므로 marketing-db-agent에 즉시 전달
+
+> 🔴 **JSONB 함정 (필독):** `improvements`·`weaknesses_before`·`weaknesses_remaining`는 Supabase가 **JSON 문자열(string)로 반환**한다 (네이티브 배열 아님). `.map()` 직접 호출 시 깨짐 → 반드시 `JSON.parse` 후 사용. `casefile-input-mapper.ts`의 `parseArr()`가 array/string 모두 방어. 신규 소비자도 동일 처리 필수.
 
 ---
 
@@ -297,7 +490,10 @@ style.css    ← 스타일
 ```
 GET  /api/sheets              ← Google Sheets에서 멘티 목록 조회 (getMenteeList)
 POST /api/generate-pdf        ← 멘티 PDF 리포트 생성 + reports-store에 메타 저장
+POST /api/generate-report     ← 리포트 생성 (generate-pdf 연관, 별도 라우트)
 GET  /api/reports/[filename]  ← 생성된 리포트 파일 다운로드 서빙
+GET  /api/mentees             ← 멘티 목록 조회
+PATCH/DELETE /api/mentees/[id] ← 멘티 수정/삭제
 ```
 
 **핵심 파일:**
@@ -319,7 +515,7 @@ admin-tool/lib/reports-store.ts   ← 리포트 메타 저장/조회 (saveReport
 
 **주요 변경 예정:**
 ```
-middleware.ts          ← PIN 쿠키 → Supabase JWT 세션 교체
+middleware.ts          ← 현재 HMAC 서명 토큰 → Supabase JWT 세션 교체
 lib/supabase.ts        ← SSR 클라이언트 추가 (기존 export 반드시 유지)
 app/login/page.tsx     ← PIN → 이메일+비밀번호
 app/mentor/* (신규)    ← 멘토 포털
@@ -367,9 +563,33 @@ app/admin/users/ (신규) ← 계정 관리 페이지
 
 ---
 
+## 인증 / 보안 경계 (2026-05-24)
+
+**역할:** 어드민 전 영역(페이지 + API) 접근 통제
+
+**구성:**
+```
+middleware.ts        ← /admin/* 및 /api/* 보호. 미인증 시 API는 401 JSON, 페이지는 /login 리다이렉트
+                       공개 예외: /api/submit-diagnosis(랜딩 폼), /api/auth/login
+lib/auth.ts          ← Web Crypto HMAC-SHA256 세션 토큰 (Edge/Node 공용)
+                       createSessionToken / verifySessionToken / verifyPin (상수시간 비교)
+app/api/auth/login   ← PIN 검증 후 서명 토큰을 httpOnly 쿠키(admin_auth, 7일)로 발급
+```
+
+**쿠키 정책:** 값은 `만료시각.HMAC서명` 토큰(PIN 평문 저장 안 함), `secure`는 프로덕션만, `sameSite=lax`
+
+> ⚠️ 새 공개 API(인증 불필요)를 추가하면 `middleware.ts`의 `PUBLIC_API` 배열에 경로를 등록해야 함
+> 📋 Phase C에서 이 메커니즘을 Supabase Auth(JWT)로 교체 예정 — [모듈 10] 참조
+
+---
+
 ## 전체 환경변수
 
 ```
+# 인증 (어드민)
+ADMIN_PIN                         ← 로그인 PIN (필수)
+AUTH_SECRET                       ← 세션 토큰 서명 키 (선택, 미설정 시 ADMIN_PIN 사용)
+
 # Anthropic
 CLAUDE_API_KEY
 
@@ -386,11 +606,33 @@ EDITOR_EMAIL
 BITLY_API_TOKEN
 
 # 영상 생성
-REMOTION_FUNCTION_NAME
-REMOTION_SERVE_URL
+REMOTION_FUNCTION_NAME            (현재: ...mem3008mb-disk2048mb-600sec)
+REMOTION_SERVE_URL               (case-file-v2)
+REMOTION_S3_BUCKET
 REMOTION_AWS_REGION              (기본: ap-northeast-2)
-PEXELS_API_KEY
+REMOTION_AWS_ACCESS_KEY_ID       ← Lambda + Polly TTS 공용
+REMOTION_AWS_SECRET_ACCESS_KEY
+PEXELS_API_KEY                   (ShortsVideo만)
+
+# TTS 나레이션
+GOOGLE_SERVICE_ACCOUNT_EMAIL     ← Google TTS(남성, 재사용) — Sheets와 공용
+GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
+# (Polly TTS는 REMOTION_AWS_* 재사용 / 오디오 저장은 SUPABASE_* 재사용)
+# 음성 공백제거: @ffmpeg-installer/ffmpeg (devDependency, silenceremove 필터용)
 ```
+
+---
+
+## 슬래시 커맨드 / 스킬 (`.claude/commands/`)
+
+| 커맨드 | 역할 |
+|-------|-----|
+| `/sync-arch` | ARCHITECTURE.md ↔ 코드 동기화 검증 |
+| `/casefile-script` | 케이스 → CaseFileVideo 대본(props+TTS) 생성 (10룰) |
+| `/casefile-qa` | 생성 대본 3관점 자동 검수 (논리/HR언어/몰입) |
+| `/shorts-strategy` | 쇼츠 콘텐츠 전략 (벤치마크·포맷·훅·CTA) |
+| `/video-production` | 영상 자동생성 연구·결정 현황 |
+| `/project-state` | 프로젝트 현황 요약 |
 
 ---
 
@@ -398,8 +640,12 @@ PEXELS_API_KEY
 
 | 우선순위 | 과제 | 모듈 | 비고 |
 |:-------:|-----|-----|-----|
-| 🔴 높음 | lead_analytics 트리거 + content_queue.skip_reason + cases_career.content_priority 컬럼 SQL 미실행 | 대시보드·마케팅 | `supabase-marketing-setup.sql` 재실행 필요 (ALTER 재실행 안전) |
-| 🟡 중간 | 렌더 상태 어드민 UI 연동 | 어드민 UI | `/api/content/[id]/video` API 구현됨, UI 폴링 화면만 연결 필요 |
+| 🔴 높음 | lead_analytics 트리거 + content_queue(skip_reason·**casefile 8컬럼**) + cases_career.content_priority 컬럼 SQL 미실행 | 대시보드·마케팅·영상 | `supabase-marketing-setup.sql` 재실행 필요 (ALTER IF NOT EXISTS — 재실행 안전). **casefile_props 등 8컬럼 추가됨** |
+| ✅ 완료 | 어드민 CaseFile 버튼 → `POST /casevideo { case_id }` 연결 + 결과 content_queue 저장 | 어드민 UI·영상 | `review/page.tsx` handleGenerateCaseVideo + casefile-store.ts UPDATE-by-id 완료 |
+| 🟢 낮음 | marketing-engine 별도 호스트 구축 (단계 2~5) | 영상 자동생성 | 코드 경계(단계 0·1) 완료. 다음: 호스팅(Railway/Render 등) 결정 → 버튼→큐 전환 → repo 분리 (`CASEFILE_PIPELINE.md` "잡 큐 계약") |
+| ✅ 완료 | 렌더 상태 어드민 UI 연동 | 어드민 UI | `render_id` DB 저장·복원, `pollRender()` 헬퍼, `casefileStageLabel()` 스테이지 라벨 (2026-05-29) |
+| ✅ 완료 | 어드민 승인 → 자동 ShortsVideo 렌더 트리거 | 영상 자동생성 | `approve/route.ts` — casefile_props 없는 아이템만 startRender() + render_id DB 저장 (2026-05-29) |
+| 🟢 낮음 | BGM 트랙 추가 (감성 royalty-free) | 영상 자동생성 | Remotion `<Audio>` 추가 — TTS와 볼륨 믹싱 |
 | 🟡 중간 | YouTube Data API v3 연동 | 트렌드 | API 키 발급 + 검색/업로드 라우트 |
 | 🟢 낮음 | Phase C (Supabase Auth 전환) | Phase C | 스펙 완성됨, 구현 미시작 |
 | 🟢 낮음 | YouTube 자동 업로드 | 영상 자동생성 | Phase C 완료 후 진행 |
