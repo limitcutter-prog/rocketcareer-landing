@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-29 (렌더 상태 UI 연동·승인→자동렌더 완료 / TTS OpenSSL 3.0 버그 수정 / 미결과제 2건 ✅ / scripts/ 유틸 스크립트 정식 추적)
+마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼))
 
 ---
 
@@ -18,7 +18,7 @@
 | 4 | 대시보드 | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/dashboard/` |
 | 5 | 트렌드/Bitly | ✅ ACTIVE | marketing-db-agent | `admin-tool/app/api/trends/`, `admin-tool/app/api/bitly/` |
 | 6 | 멘토 관리 | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/mentors/` |
-| 7 | 영상 자동생성 (Remotion Lambda) + TTS 나레이션 | ✅ ACTIVE | — | `admin-tool/lib/marketing/video-generator.ts`, `lib/marketing/tts-generator.ts`, `admin-tool/remotion/` (ShortsVideo + CaseFileVideo v7) |
+| 7 | 영상 자동생성 (**로컬 Remotion 렌더** + TTS 나레이션) | ✅ ACTIVE | — | `admin-tool/scripts/make-case.mts`(로컬 렌더, 권장), `lib/marketing/casefile-pipeline.ts`, `tts-generator.ts`, `admin-tool/remotion/` (CaseFileVideo v7). Lambda(`video-generator.ts`)는 잔존하나 serveUrl 구형 |
 | 8 | 멘토 인코딩 DB | ✅ ACTIVE | encoding-agent | `Mento_incoding_casedb_project/henry-casedb/` |
 | 9 | 랜딩페이지 | ✅ ACTIVE | landing-agent | `index.html`, `style.css` |
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
@@ -392,23 +392,23 @@ Lambda 함수: remotion-render-4-0-465-mem3008mb-disk2048mb-600sec (timeout 600s
 
 ---
 
-### ⚠️ 경로 정합 — OLD vs NEW (충돌 방지 결정)
+### ⚠️ 경로 정합 — 로컬 렌더 전환 (2026-05-30)
 
-현재 영상 생성 경로가 2개 공존. **혼동 시 구형 영상이 나오므로 정합 규칙을 고정한다.**
+**CaseFile 영상 렌더는 이제 완전 로컬.** 어드민 웹의 영상 생성 버튼(쇼츠·케이스파일)은 모두 제거됨.
 
-| 경로 | 트리거(현재) | 컴포지션 | 음성/룰/duration | 상태 |
-|---|---|---|---|---|
-| `POST /video` (body 없음) | 어드민 "영상 생성" 버튼(`review/page.tsx` `handleGenerateVideo`) | **ShortsVideo(구형)** | 없음 | ⚠️ 구형 — 신규 작업 미반영 |
-| `POST /video` (`type:case_file`) | (호출처 없음) | CaseFileVideo | body.audio만, **timing/duration 없음** | 🔴 불완전 — 사용 금지 |
-| `POST /casevideo` | (아직 버튼 미연결) | **CaseFileVideo v7** | 파이프라인 전체 적용 | ✅ 정합(유일한 권장 경로) |
+| 경로 | 트리거(현재) | 컴포지션 | 상태 |
+|---|---|---|---|
+| **`npm run make:case -- <caseId>`** | 로컬 CLI(`scripts/make-case.mts`) | **CaseFileVideo v7** | ✅ **유일한 권장 경로**. 매 실행 시 `remotion/index.ts` 즉석 번들 → 항상 최신 컴포지션 |
+| `POST /casevideo` (Lambda) | (어드민 버튼 제거됨) | CaseFileVideo | ⚠️ 잔존 — 배포된 serveUrl이 **구형(ShortsVideo만)**이라 `Could not find composition CaseFileVideo` 발생. 쓰려면 serveUrl 재배포 필요 |
+| `POST /video` (ShortsVideo) | (어드민 버튼 제거됨) | ShortsVideo(구형) | ⚠️ 구형 — UI 제거됨. 백엔드 라우트만 잔존 |
 
 **🔒 정합 결정 (고정):**
-1. **CaseFileVideo는 오직 `/casevideo`(runCaseFilePipeline) 경유로만 생성.** `/video`의 case_file 분기는 **deprecated**(불완전, 사용 금지).
-2. **어드민 CaseFile 버튼은 `/casevideo`로 연결해야 함** — ✅ `cases_career → CaseInput` 매핑 완료(`casefile-input-mapper.ts`). 이제 어드민 버튼을 `POST /casevideo { case_id }`로 연결 가능. (구형 `/video` case_file 경로는 여전히 금지)
-3. 어드민 버튼이 ShortsVideo를 계속 쓰려면 그대로 둠(별개 트랙). **CaseFile과 혼선 금지.**
-4. 위 (1)~(7) 설정값은 어드민에서 **표시(읽기)**만 하고, 운영 노브(음성·길이)만 추후 제어 노출. 룰·알고리즘은 코드 고정.
+1. **CaseFile 영상은 로컬 `npm run make:case`로만 생성.** 로컬 스크립트는 기존 TS 파이프라인(`runCaseFilePipeline`)을 그대로 재사용(SoT) → 대본·검수·TTS·조립 로직 중복 없음.
+2. **QA 게이트**: `runCaseFilePipeline({ failOnQA: true })`면 검수 최종 실패 시 TTS 전에 `QAGateError` throw → 불량 영상·TTS 비용 방지. 로컬 스크립트는 `--force` 없으면 게이트 ON.
+3. **어드민 web 영상 버튼 제거됨** (`review/page.tsx`): 쇼츠 생성·케이스파일 영상 버튼, 롱폼 우측 컬럼, 음성·속도 노브, 케이스파일 편집 패널 모두 삭제. `content_queue` 행 생성(`/generate`)·검수/승인/스킵 백엔드는 유지.
+4. **폰트 최적화**(`remotion/lib/fonts.ts`): `loadFont`에 weight(400/600/700/800/900)+subset(korean/latin) 제한 → 요청 1116→605. 잔여 CJK 슬라이스 경고는 `ignoreTooManyRequestsWarning`로 silence.
 
-> ⚠️ 어드민 연동 작업 시 이 표를 먼저 확인. 새 버튼이 `/video`로 case_file을 호출하면 안 됨(불완전 경로).
+> ⚠️ Lambda 경로를 되살리려면 `CaseFileVideo` 포함된 번들을 S3에 재배포해야 함. 현재는 로컬 렌더만 정합.
 
 ---
 
