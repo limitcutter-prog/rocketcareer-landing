@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼))
+마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기))
 
 ---
 
@@ -398,12 +398,13 @@ Lambda 함수: remotion-render-4-0-465-mem3008mb-disk2048mb-600sec (timeout 600s
 
 | 경로 | 트리거(현재) | 컴포지션 | 상태 |
 |---|---|---|---|
-| **`npm run make:case -- <caseId>`** | 로컬 CLI(`scripts/make-case.mts`) | **CaseFileVideo v7** | ✅ **유일한 권장 경로**. 매 실행 시 `remotion/index.ts` 즉석 번들 → 항상 최신 컴포지션 |
+| **`npm run make:case -- <caseId>`** | 로컬 CLI(`scripts/make-case.mts`) | **CaseFileVideo v7** | ✅ **권장 경로 (CLI)**. 매 실행 시 `remotion/index.ts` 즉석 번들 → 항상 최신 컴포지션 |
+| **`/admin/local-studio`** (웹 패널) | 로컬 dev 서버(`app/api/local-studio/*`) | **CaseFileVideo v7** | ✅ **권장 경로 (웹)**. dev 전용(NODE_ENV=production이면 403). `script`(파이프라인 render:false)→편집→`render`(즉석 번들)→`preview`. make:case와 동일 렌더 경로 |
 | `POST /casevideo` (Lambda) | (어드민 버튼 제거됨) | CaseFileVideo | ⚠️ 잔존 — 배포된 serveUrl이 **구형(ShortsVideo만)**이라 `Could not find composition CaseFileVideo` 발생. 쓰려면 serveUrl 재배포 필요 |
 | `POST /video` (ShortsVideo) | (어드민 버튼 제거됨) | ShortsVideo(구형) | ⚠️ 구형 — UI 제거됨. 백엔드 라우트만 잔존 |
 
 **🔒 정합 결정 (고정):**
-1. **CaseFile 영상은 로컬 `npm run make:case`로만 생성.** 로컬 스크립트는 기존 TS 파이프라인(`runCaseFilePipeline`)을 그대로 재사용(SoT) → 대본·검수·TTS·조립 로직 중복 없음.
+1. **CaseFile 영상은 로컬에서만 생성** — CLI `npm run make:case` 또는 웹 패널 `/admin/local-studio`(dev). 둘 다 기존 TS 파이프라인(`runCaseFilePipeline`)을 그대로 재사용(SoT) → 대본·검수·TTS·조립 로직 중복 없음. 웹 패널은 대본 생성 후 hook/context/before/after/diff/closing/cta를 편집한 뒤 `/api/local-studio/render`로 즉석 번들 렌더(자막만 수정 시 음성 재생성 불필요).
 2. **QA 게이트**: `runCaseFilePipeline({ failOnQA: true })`면 검수 최종 실패 시 TTS 전에 `QAGateError` throw → 불량 영상·TTS 비용 방지. 로컬 스크립트는 `--force` 없으면 게이트 ON.
 3. **어드민 web 영상 버튼 제거됨** (`review/page.tsx`): 쇼츠 생성·케이스파일 영상 버튼, 롱폼 우측 컬럼, 음성·속도 노브, 케이스파일 편집 패널 모두 삭제. `content_queue` 행 생성(`/generate`)·검수/승인/스킵 백엔드는 유지.
 4. **폰트 최적화**(`remotion/lib/fonts.ts`): `loadFont`에 weight(400/600/700/800/900)+subset(korean/latin) 제한 → 요청 1116→605. 잔여 CJK 슬라이스 경고는 `ignoreTooManyRequestsWarning`로 silence.
