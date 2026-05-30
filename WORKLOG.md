@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-05-30 12:13 — 로컬 스튜디오 나레이션 우선 분리 플로우 + 다수 버그 수정
+
+**무엇을**
+- **제작 순서 분리(나레이션 우선)**: ③대본(나레이션) 생성 → 수정 → ④자막 생성(`generateSubtitlesFromNarration`, 나레이션 기준·before/after 원문 유지) → 수정 → ⑤음성(TTS, `generateCaseFileTTS`) → ⑥렌더. 파이프라인 `tts:false` 옵션·`/tts`·`/subtitles` 라우트 신설.
+- **QA 권고 실제 반영**: `reviseCaseFileScript`로 검수 issues를 대본에 반영 후 노출(표시만 X).
+- **제작 이력에 대본 저장**: `_studio-index.json`에 props·ttsScenes 저장 → 케이스 재선택 시 대본·자막·영상 복원.
+- **버그 수정 3종**: ① preview Node스트림→Buffer 반환(미리보기 무한 스피너) ② TTS폴더·파일명 caseId(`caseSlug`) 기준(케이스 간 음성/영상 충돌) ③ JSON 출력 견고화(프리필 미지원 모델 대응 — 강한 JSON지시+1회 재시도).
+- **dev 안정화**: webpack 메모리 캐시(`.next` 캐시 손상 방지) + `predev` 포트가드(`scripts/free-port.mjs`, 중복 dev 차단).
+
+**왜**
+- 자막·나레이션이 따로 생성돼 두 번 편집하는 번거로움 → 나레이션을 기준으로 자막이 따라오게.
+- QA가 권고만 하고 안 고쳐 써먹지 못함 / case_number가 caseId와 어긋나 영상·음성이 다른 케이스로 섞임 / 중복 dev·캐시 손상으로 ENOENT 반복.
+
+**영향 / 후속**
+- 정상 `case-NNN` id는 파일명 동일 → 기존 영상 무영향. 충돌났던 stale 인덱스 항목 1건 정리함.
+- `/admin/local-studio` API 6→7종(subtitles 추가). 사용자 실제 ③~⑥ 플로우 검증 완료(음성·자막·영상 일치 확인).
+- 후속: 새 CTA 톤·분리 플로우로 영상 몇 편 만들며 줄바꿈·품질 체감.
+
+**커밋**: `admin-tool` 66d938b / `landing` (이 sync 커밋)
+
+---
+
 ## 2026-05-30 01:16 — 로컬 스튜디오 제작 이력 영속화 + CTA 톤 개편(진단 유도)
 
 **무엇을**
