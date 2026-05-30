@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정))
+마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -399,7 +399,7 @@ Lambda 함수: remotion-render-4-0-465-mem3008mb-disk2048mb-600sec (timeout 600s
 | 경로 | 트리거(현재) | 컴포지션 | 상태 |
 |---|---|---|---|
 | **`npm run make:case -- <caseId>`** | 로컬 CLI(`scripts/make-case.mts`) | **CaseFileVideo v7** | ✅ **권장 경로 (CLI)**. 매 실행 시 `remotion/index.ts` 즉석 번들 → 항상 최신 컴포지션 |
-| **`/admin/local-studio`** (웹 패널) | 로컬 dev 서버(`app/api/local-studio/*`, API 7종) | **CaseFileVideo v7** | ✅ **권장 경로 (웹)**. dev 전용(NODE_ENV=production이면 403). **나레이션 우선 분리 플로우**: ③`script`(나레이션 생성+QA권고 반영)→④`subtitles`(나레이션 기준 자막 생성, before/after 원문 유지)→⑤`tts`(음성+duration)→⑥`render`(즉석 번들)→`preview`. **제작 이력 영속화**(`out/_studio-index.json`+`renders` API): `✅제작됨` 배지·일시 + 케이스 전환 후 대본·자막·영상 복원. **TTS 폴더·파일명은 caseId(`caseSlug`) 기준**(케이스 간 충돌 차단). preview는 Buffer 반환(스트림 캐스팅 멈춤 버그 회피) |
+| **`/admin/local-studio`** (웹 패널) | 로컬 dev 서버(`app/api/local-studio/*`, API 8종) | **CaseFileVideo v7** | ✅ **권장 경로 (웹)**. dev 전용(NODE_ENV=production이면 403). **나레이션 우선 분리 플로우**: ③`script`(나레이션 생성+QA권고 반영)→④`subtitles`(나레이션 기준 자막, before/after 원문 유지)→⑤`tts`(음성+duration)→⑥`render`(즉석 번들)→`preview`→⑦`publish-kit`(유튜브 제목3·설명·랜딩 후킹 고정댓글). **제작 이력 영속화**(`out/_studio-index.json`+`renders` API): `✅제작됨` 배지·일시 + 케이스 전환 후 대본·자막·영상·키트 복원. **TTS 폴더·파일명 caseId(`caseSlug`) 기준**(충돌 차단). preview Buffer 반환 |
 | `POST /casevideo` (Lambda) | (어드민 버튼 제거됨) | CaseFileVideo | ⚠️ 잔존 — 배포된 serveUrl이 **구형(ShortsVideo만)**이라 `Could not find composition CaseFileVideo` 발생. 쓰려면 serveUrl 재배포 필요 |
 | `POST /video` (ShortsVideo) | (어드민 버튼 제거됨) | ShortsVideo(구형) | ⚠️ 구형 — UI 제거됨. 백엔드 라우트만 잔존 |
 
