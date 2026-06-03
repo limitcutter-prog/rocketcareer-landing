@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-03 17:30 — CaseFileVideo BGM 추가 (TTS 우선·저볼륨)
+
+**무엇을**
+- 배경음악 도입. `remotion/lib/bgm.ts` `BGM_CONFIG`(SoT) + CaseFileVideo 전체 1개 루프 `<Audio>` + 프레임 볼륨.
+- 볼륨: **인트로 0.11 → 본문 0.05 → CTA 0.045(억제)** + 시작/끝 페이드, 인트로→본문 하강 램프. **TTS 절대 우선**(본문 0.05로 TTS 1.0 아래).
+- props `bgm`: false 끔 / 문자열 src 교체 / 미지정 defaultSrc. `bundle({publicDir})` 추가(render 라우트·make-case, staticFile 해석).
+- 음원: Pixabay "Medical Doctor Clinic Background"(prettyjohn1, Corporate). **코드만 커밋, mp3는 .gitignore로 제외**(저작권 확인 전 바이너리 박제 보류, `public/bgm/` 로컬만).
+
+**왜**
+- 본문이 음성만 있어 어색 → 교육형·HR 분석형에 어울리는 코퍼레이트 BGM으로 분위기 보강. 단 TTS 가청성 최우선.
+
+**영향 / 후속**
+- 저작권: **일부공개 업로드 후 제한 여부 확인 → 뜨면 `BGM_CONFIG.enabled=false`로 즉시 제거.**
+- mp3 미추적이라 다른 환경/클린클론에선 `public/bgm/clinic-corporate.mp3` 수동 배치 필요(없으면 staticFile 404 → BGM만 빠지고 영상은 정상).
+
+**커밋**: `admin-tool` (이 커밋) / `landing` (이 sync 커밋)
+
+---
+
 ## 2026-06-03 17:06 — IMC 기획안 v1·v2 git 추적 시작
 
 **무엇을**

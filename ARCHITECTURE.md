@@ -365,6 +365,17 @@ runCaseFilePipeline(CaseInput) — lib/marketing/casefile-pipeline.ts
 | ⚠️ threshold | **-50dB 고정** (-38dB는 단어 끝을 먹어 단어 붙음/어눌) | 〃 |
 | 바이너리 | `@ffmpeg-installer/ffmpeg` (Remotion 번들엔 silenceremove 없음) | 〃 |
 
+#### (3-B) 배경음악 BGM (2026-06-03)
+| 항목 | 값 | 출처(SoT) |
+|---|---|---|
+| 설정 | `BGM_CONFIG` (enabled·defaultSrc·volume·fade) | `remotion/lib/bgm.ts` |
+| 볼륨 | 인트로 `0.11` → 본문 `0.05` → CTA `0.045`(억제) + 시작/끝 페이드 | `CaseFileVideo.tsx` bgmVolume |
+| ⚠️ 원칙 | **BGM은 TTS보다 절대 앞으로 X** (본문 0.05로 TTS 1.0 아래 고정) | — |
+| 음원 | Pixabay "Medical Doctor Clinic Background"(prettyjohn1, Corporate) · `public/bgm/`(**git 미추적, 로컬만**) | — |
+| 토글 | props `bgm:false` / `BGM_CONFIG.enabled=false`로 즉시 제거(저작권 제한 시) | — |
+| ⚠️ 렌더 | staticFile 해석 위해 `bundle({publicDir: public})` 필수(render 라우트·make-case) | — |
+| 운영 | 일부공개 업로드 후 저작권 제한 확인 → 뜨면 즉시 제거 | — |
+
 #### (4) 길이/타이밍
 | 항목 | 값 | 출처(SoT) |
 |---|---|---|
