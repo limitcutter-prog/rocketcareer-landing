@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -220,7 +220,11 @@ hook_type 3종 시각 변형: 숫자형 / 반전형 / 공감형
 
 **② CaseFileVideo — 익명 케이스 파일 시리즈 (v7, 2026-05-25 풀스크린 재설계)**
 ```
-구조(5씬): HOOK → CASE CONTEXT → PAIR×N(BEFORE/AFTER) → CLOSING → CTA
+🚀 브랜드 인트로(2026-06-03, 모든 영상 맨 앞 5.0s): 발사 심볼(셰브론 V5, SVG·글리프안전)
+  상승 발사(진동·덜컥·스피드 스미어) → "당신의 커리어, 발사 준비 완료" → "로켓커리어연구소"(샤인/글로우)
+  → "현직 HR과 함께, 커리어 런칭 플랫폼". INTRO_SEC=5.0, totalCaseFrames 반영(음성·자막 싱크 유지).
+  하단 워터마크 = "현직 HR담당자와 함께, 커리어 런칭 플랫폼"(컨텐츠 내내 노출). 기존 팔레트 유지.
+구조(5씬): HOOK → CASE CONTEXT → PAIR×N(BEFORE/AFTER) → CLOSING → CTA  (앞에 INTRO 추가)
   씬별 길이는 timing override + pair.duration으로 개별 제어(TTS 실측에 맞춤)
 v7 핵심:
   - 숫자 강조: highlightMetrics() — 숫자/단위/화살표를 앰버(#FFC83D)로 자동 강조
@@ -466,6 +470,55 @@ Supabase RPC: search_similar_cases(query_embedding, match_count, job_filter, min
 > ⚠️ 컬럼 추가·삭제·이름변경 시 `content-scorer.ts`가 직접 참조하므로 marketing-db-agent에 즉시 전달
 
 > 🔴 **JSONB 함정 (필독):** `improvements`·`weaknesses_before`·`weaknesses_remaining`는 Supabase가 **JSON 문자열(string)로 반환**한다 (네이티브 배열 아님). `.map()` 직접 호출 시 깨짐 → 반드시 `JSON.parse` 후 사용. `casefile-input-mapper.ts`의 `parseArr()`가 array/string 모두 방어. 신규 소비자도 동일 처리 필수.
+
+---
+
+#### 인코딩 파이프라인 로직 (2026-05-26 정리 — 이 절 절대 잊지 말 것)
+
+**왜 인코딩하는가 (3개 다운스트림 동시 공급):**
+1. **마케팅 자동화** — `hook_sentence`·`content_angle`·`transformation_score`를 `content-scorer.ts`·`script-generator.ts`가 직접 참조 → 쇼츠/롱폼 양산
+2. **RAG 검색** — `embedding` 컬럼으로 `search_similar_cases()` RPC가 유사 케이스 top-N 반환. `ver1-resume-writer` SKILL.md §0가 신규 멘티 경력기술서 작성 전 자동 조회 → 영석님 판단 패턴 주입
+3. **판단 규칙 누적** — `rules_career`에 LAYER1~7 패턴/판단/수정안을 `frequency`로 카운트 축적 (HR 휴리스틱의 DB화)
+
+**파이프라인 단계 (`cases/career/case-XXX/` → DB):**
+```
+① classifier.py
+   - Before: 파일명 버전마커 없음
+   - After:  V숫자 / 수정 / 완성 / 최종 / henry / FINAL 포함 (최고버전=최종 After)
+   - 판별 불가 → _ambiguous/ 이동
+
+② analyze_case.extract_text  ← 콘텐츠 품질의 첫 번째 관문
+   - docx: 문단 + 표(table) + 텍스트박스를 문서 순서대로 (★2026-05-26 표 추출 추가)
+           이전엔 paragraphs만 읽어 표 기반 완성본이 0자로 누락됐음
+   - pdf:  pdfplumber, 이미지PDF는 "이미지 기반 PDF" 에러 반환 (Claude 호출 안 함)
+   - 가드: before/after 텍스트가 비면 Claude 호출 전 에러 반환 (API 낭비·DB 오염 방지)
+
+③ analyze_case Claude 호출 (Sonnet 4-6)
+   - max_tokens 16000 (★2026-05-26 6000→16000, 풍부한 케이스 truncation 방지)
+   - 응답 파싱: ```json 펜스 제거 → json.loads → 실패 시 {...} 정규식 폴백
+   - 최종 실패 → output/{type}/analyses/{cid}_raw_fail.txt 디버그 저장 후 에러
+
+④ store_case.py
+   - cases_career upsert (id=PK)
+   - rules_career frequency 증가 (같은 layer/pattern은 케이스 ID만 추가)
+   - sync_cases.py 삭제 시 frequency 감소 → 0이면 is_active=FALSE
+
+⑤ embed_cases (batch_process 내장 자동 호출)
+   - paraphrase-multilingual-MiniLM-L12-v2 (384dim, 한국어)
+   - cases_career.embedding에 즉시 저장 (코사인 유사도 검색 가능 상태)
+```
+
+**알려진 실패 유형 매핑:**
+| 증상 | 진단 | 처치 |
+|------|------|------|
+| docx인데 추출 0자 | 표 기반 완성본인데 표 추출 누락 | ✅ 해결됨 (2026-05-26) |
+| raw_fail.txt 끝이 `}` 없이 끊김 | 응답 토큰 한도 초과 | ✅ max_tokens 16000 (2026-05-26) |
+| raw_fail.txt 정상 종료인데 json.loads 실패 | 응답 문자열 내부 unescaped 특수문자 | 재시도하면 대개 해결 |
+| extract_text가 "이미지 기반 PDF" 에러 | 스캔 PDF, OCR 미적용 | 텍스트 docx 변환 필요 |
+| Before 폴더에 영석님 작업본만 존재 | 멘티 원본 부재 | 원본 추가 or 영구 스킵 |
+| API 응답 "credit balance too low" | 크레딧 소진 | 충전 후 `--skip-done` 재실행 |
+
+**현재 보류 5건 (2026-05-26):** case-024(특수문자 재시도 대기), case-048(크레딧 충전 대기), case-056·102(이미지 PDF — 원본 docx 필요), case-084(멘티 원본 부재)
 
 ---
 
