@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -23,6 +23,31 @@
 | 9 | 랜딩페이지 | ✅ ACTIVE | landing-agent | `index.html`, `style.css` |
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
+
+---
+
+## 📣 마케팅 전략 레이어 (IMC) — 위 코드 모듈들의 상위 의도
+
+> 모듈 2·5·7·9의 코드는 **마케팅 IMC 전략의 구현체**다. 전략 자체의 단일 진실 소스(SoT):
+> **`marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`**
+> (브랜드 아이덴티티·메시지·채널·콘텐츠·퍼널·KPI·SOP). v1은 원본 보존.
+> 스코프: 커리어 서비스(Track A)만. 전월세 안심 리포트는 별개 도메인(제외).
+
+**전략 결정 → 구현 매핑 (변경 시 양쪽 동기화):**
+
+| IMC 전략 결정 | 구현 위치 (코드·자산) | 상태 / 정합 키 |
+|---|---|---|
+| BI 컬러 (네이비 `#1B2B4B`·그린 `#27AE60`·앰버 `#FFC83D`) | `style.css`, `remotion/lib/fonts.ts`, `CaseFileVideo.tsx` | 골드크림 `#E8D5A3` 폐기 — 문서·코드 일치 |
+| 브랜드 인트로 V5 (발사 메타포) | `remotion/compositions/CaseFileVideo.tsx` IntroScene | `INTRO_SEC=4.4` · 상단 헤더 태그라인 |
+| 캐치·발사/런칭 메타포 | 인트로 태그라인 + `generatePublishKit` | "당신의 커리어, 발사 준비 완료" |
+| 콘텐츠 화법 룰 (HR내부→지원자·집단목소리·금지패턴) | `lib/marketing/casefile-script.ts` SYSTEM_PROMPT 룰2d | ✅ 구현(2026-06-03) · **4곳 동기화** |
+| 훅 5유형 (케이스 고유) | `casefile-script.ts` 룰10 | 범용 클리셰 금지 |
+| CTA — 본문 진단 3톤 / 고정댓글 명시 (이원화) | `casefile-script.ts` 룰8 + `generatePublishKit` | ✅ 구현(2026-06-03) · 본문 소프트·댓글 명시 |
+| 콘텐츠 3대 카테고리·믹스 (포괄2+특화1) | `lib/marketing/content-scorer.ts`, `script-generator.ts` | `content_angle` 기반 |
+| 퍼널 (진단→리포트 48h→전환) | 🔒 구간3 + 모듈 9 랜딩 + 모듈 11 리포트 | FROZEN 경로 |
+| 페르소나 3개 | (전략 문서 — 콘텐츠 타겟팅 지침) | 코드 직접 매핑 없음 |
+
+> ⚠️ **정합 규칙:** 위 결정을 바꾸면 → ① IMC 기획안 v2 갱신 + ② 해당 코드/자산 수정 + ③ (화법·훅·CTA는) 룰 **4곳 동시 갱신**(`casefile-script.ts` · `casefile-qa.md` · `remotion/CLAUDE.md` · `casefile-script.md`) + ④ `/sync-arch`. 코드만 바뀌고 전략 문서가 안 따라오면(또는 반대) `/sync-arch`가 "📣 마케팅 정합 표류"로 리포트한다.
 
 ---
 
@@ -693,7 +718,7 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 
 | 커맨드 | 역할 |
 |-------|-----|
-| `/sync-arch` | ARCHITECTURE.md ↔ 코드 동기화 검증 |
+| `/sync-arch` | ARCHITECTURE.md ↔ 코드 **+ 마케팅 IMC 전략** 동기화 검증 + WORKLOG 기록 |
 | `/casefile-script` | 케이스 → CaseFileVideo 대본(props+TTS) 생성 (10룰) |
 | `/casefile-qa` | 생성 대본 3관점 자동 검수 (논리/HR언어/몰입) |
 | `/shorts-strategy` | 쇼츠 콘텐츠 전략 (벤치마크·포맷·훅·CTA) |

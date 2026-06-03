@@ -16,10 +16,31 @@
    - `admin-tool/lib/marketing/` — 영상 파이프라인·TTS·스코어링 등
    - `admin-tool/remotion/` — Remotion 컴포지션
    - `Mento_incoding_casedb_project/henry-casedb/` — 인코딩 DB
+   - `marketing_division/` — 마케팅 IMC 기획안 (전략 SoT, v1·v2)
 3. 실제 파일 구조와 ARCHITECTURE.md 불일치 항목 리포트
+3-A. **마케팅 전략(IMC) 정합 체크 (필수)** — 아래 "마케팅 정합 절차" 수행
 4. 사용자 확인 후 ARCHITECTURE.md 업데이트
 5. 변경된 모듈이 있으면 해당 모듈 CLAUDE.md의 `현재 상태` 섹션도 업데이트
 6. **작업 로그 기록 (필수)** — 아래 "작업 로그 절차" 수행
+
+## 마케팅 정합 절차 (IMC ↔ 코드)
+
+> 코드(`lib/marketing` 등)만 검증하면 그 **상위 마케팅 전략(IMC)이 코드와 따로 노는 표류**를 못 잡는다.
+> ARCHITECTURE.md "📣 마케팅 전략 레이어" 표를 기준으로 IMC 기획안 v2 ↔ 코드·자산 일치를 점검한다.
+> (마케팅은 아키텍처의 일부다 — 코드 모듈과 동급으로 동기화한다.)
+
+점검 항목 (기획안 § ↔ 코드·자산):
+- BI 컬러: §1 ↔ `style.css` / `remotion/lib/fonts.ts` (골드크림 폐기 유지?)
+- 브랜드 인트로: §1 ↔ `CaseFileVideo.tsx` (`INTRO_SEC`·연출·태그라인 위치)
+- 캐치·발사 메타포: §3 ↔ 인트로 태그라인 / `generatePublishKit`
+- 화법 룰·훅·CTA: §3 ↔ `casefile-script.ts` SYSTEM_PROMPT (+ 룰 **4곳 동기화** 여부: 코드·`casefile-qa.md`·`remotion/CLAUDE.md`·`casefile-script.md`)
+- 콘텐츠 카테고리·믹스: §5 ↔ `content-scorer.ts` / `script-generator.ts`
+- 퍼널·페르소나: §7·§2 ↔ 구간3·랜딩 (전략이 바뀐 경우만)
+
+처리:
+- 불일치 발견 → 어느 쪽이 최신인지 사용자 확인 → 기획안 또는 코드 갱신 → 양쪽 정합.
+- 전략 결정이 신규 추가/변경됐으면 ARCHITECTURE.md "📣 마케팅 전략 레이어" 표도 갱신.
+- 결과를 출력 형식 "📣 마케팅 정합(IMC)" 라인에 기재.
 
 ## 작업 로그 절차 (WORKLOG.md)
 
@@ -71,6 +92,7 @@
 🆕 신규 감지: [경로] — ARCHITECTURE.md에 없음
 🗑️  경로 없음: [모듈명] — 삭제됐거나 이동된 것으로 보임
 
+📣 마케팅 정합(IMC): ✅ 일치 / ⚠️ 표류 [항목] — [기획안 §N vs 코드]
 📝 WORKLOG 기록: YYYY-MM-DD HH:MM — <제목> (커밋 N건 근거)
 마지막 업데이트: [날짜]
 ```
