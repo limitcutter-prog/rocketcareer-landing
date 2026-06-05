@@ -39,7 +39,7 @@
 | IMC 전략 결정 | 구현 위치 (코드·자산) | 상태 / 정합 키 |
 |---|---|---|
 | BI 컬러 (네이비 `#1B2B4B`·그린 `#27AE60`·앰버 `#FFC83D`) | `style.css`, `remotion/lib/fonts.ts`, `CaseFileVideo.tsx` | 골드크림 `#E8D5A3` 폐기 — 문서·코드 일치 |
-| 브랜드 인트로 V5 (발사 메타포) | `remotion/compositions/CaseFileVideo.tsx` IntroScene | `INTRO_SEC=4.4` · 상단 헤더 태그라인 |
+| 브랜드 카드 V5 (발사 메타포, **클로징 아웃트로**) | `remotion/compositions/CaseFileVideo.tsx` IntroScene | `INTRO_SEC=4.4` · CTA 뒤 배치(오프닝→클로징) · 상단 헤더 태그라인 |
 | 캐치·발사/런칭 메타포 | 인트로 태그라인 + `generatePublishKit` | "당신의 커리어, 발사 준비 완료" |
 | 콘텐츠 화법 룰 (HR내부→지원자·집단목소리·금지패턴) | `lib/marketing/casefile-script.ts` SYSTEM_PROMPT 룰2d | ✅ 구현(2026-06-03) · **4곳 동기화** |
 | 훅 5유형 (케이스 고유) | `casefile-script.ts` 룰10 | 범용 클리셰 금지 |
@@ -619,6 +619,61 @@ app/admin/users/ (신규) ← 계정 관리 페이지
 
 ---
 
+### 🚧 모듈 12 — 멘토링 마켓플레이스 (양면 거래) — BUILT·미배포
+
+> **상태:** `feature/marketplace-phase1` 브랜치에 구현됨. **origin/main 미머지 = 미배포.** 신규 SQL 4종 미실행 추정(Supabase 수동). PRD "로켓커리어 멘토링 마켓플레이스 Phase 1~3"(PRD 문서 자체는 git 미추적).
+>
+> ⚠️ **거버넌스 모순 (정합 필요):**
+> - **IMC v2 §1**은 "플랫폼(미래): 모두의커리어 (Track B, **현재 미운영**)"이라 명시 — 그러나 이 모듈이 곧 Track B이고 이미 Phase 1 구현됨 → IMC v2 갱신 필요.
+> - **모듈 10(Phase C)**은 멘토 포털 "📋 미시작"이라 명시 — 그러나 `/mentor` 포털·멘토 로그인이 이미 구현됨. 단 **Supabase Auth(JWT)가 아니라 자체 `password_hash` 로그인**이라 모듈 10 설계와 별개 인증 → 통합 방향 결정 필요.
+
+**역할:** 공개 멘토 쇼케이스 + 멘토 온보딩(지원→심사→승인) + 멘토 포털(받은 신청 수락/거절·프로필) + 양면 거래(신청→매칭→주문→결제→정산). 기존 크몽 후기·구간3 진단 퍼널("사전 상담")을 흡수해 자체 마켓플레이스화. 브랜드 컬러(NAVY `#1B2B4B` / GREEN `#27AE60`) 정합.
+
+**페이지:**
+```
+/showcase            ← 공개 마켓플레이스 메인 (히어로+매칭위젯, 5단계, 인기멘토, 후기 마퀴, 실시간 통계)
+/showcase/mentors    ← 멘토 목록 (직무·서비스 필터)
+/showcase/reviews    ← 후기 (크몽 임포트, 마스킹)
+/showcase/faq        ← FAQ
+/showcase/apply      ← 멘토 지원(가입) 폼
+/mentor/login        ← 멘토 로그인
+/mentor              ← 멘토 포털 (프로필 편집·서비스·받은 신청 수락/거절)
+```
+
+**API 라우트:**
+```
+GET  /api/showcase/stats           ← 합격수·진단수·진행중·후기·평점 집계
+GET  /api/showcase/feed            ← activity_feed (마스킹 실시간 활동)
+GET  /api/showcase/mentors         ← 공개 멘토 목록 (approved & visible)
+GET  /api/showcase/reviews         ← 후기 목록
+POST /api/showcase/mentor-apply    ← 멘토 지원 접수 → mentor_applications
+POST /api/showcase/mentor-interest ← 멘티 관심/신청 → mentee_applications
+POST /api/mentor/login · logout    ← 멘토 인증 (password_hash)
+GET  /api/mentor/me                ← 본인 프로필+서비스
+GET  /api/mentor/requests · [id]   ← 받은 멘티 신청 조회 / 수락·거절 → matches
+```
+> ⚠️ **middleware 확인 필요:** `/api/*`는 인증 게이트 대상. 공개용 `/api/showcase/*`·`/api/mentor/login`이 `PUBLIC_API`에 등록 안 되면 비로그인 401 → 쇼케이스 작동 불가.
+
+**Supabase 테이블 (신규 11개 — 🔒 FROZEN 무수정, diagnoses/mentees는 FK 읽기 조인만):**
+```
+mentor_profiles      — 공개/심사용 멘토 프로필 (status, is_visible, 로그인 email·password_hash·last_login_at, 평점 캐시)
+mentor_applications  — 멘토 지원(가입) → 승인 시 mentor_profiles 생성
+services             — 멘토별 상품 (크몽 product 매핑, price_band)
+reviews              — 크몽 임포트 후기 (정규식 마스킹, LLM 0토큰)
+mentee_applications  — 멘티 신청 (desired_mentor_id, diagnosis_id = 🔒읽기 FK only)
+matches / match_events — 신청→수락/거절→진행/완료 + 상태 감사 이력
+orders / payments / settlements — 결제·에스크로·정산 (Phase 3 골격, fee nullable=수익모델 미정)
+activity_feed        — 쇼케이스 실시간 활동 피드 소스
+```
+
+**신규 SQL (실행 순서):** `supabase-marketplace-setup.sql`(테이블 10) → `mentor-apply.sql`(mentor_applications) → `mentor-auth.sql`(로그인 컬럼) → `seed.sql`(시드)
+
+**핵심 파일:** `app/showcase/ui.tsx`(공용 UI — 카드·모달·후기 마퀴·슬라이더), `app/showcase/page.tsx`, `app/mentor/page.tsx`
+
+**멀티멘토 대비:** 전 테이블에 `mentor_id` FK 선반영. 초기엔 영석님 1인 시드.
+
+---
+
 ## 의존성 맵
 
 ```
@@ -741,3 +796,6 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 | 🟡 중간 | YouTube Data API v3 연동 | 트렌드 | API 키 발급 + 검색/업로드 라우트 |
 | 🟢 낮음 | Phase C (Supabase Auth 전환) | Phase C | 스펙 완성됨, 구현 미시작 |
 | 🟢 낮음 | YouTube 자동 업로드 | 영상 자동생성 | Phase C 완료 후 진행 |
+| 🔴 높음 | 마켓플레이스 SQL 4종 미실행 (setup→apply→auth→seed) | 마켓플레이스(12) | Supabase 수동. 11개 테이블·멘토 로그인 컬럼·시드. 미실행 시 `/showcase`·`/mentor` 동작 불가 |
+| 🟡 중간 | 마켓플레이스 main 머지·배포 결정 | 마켓플레이스(12) | `feature/marketplace-phase1` 미머지=미배포. 머지 시 Vercel 배포 + `/api/showcase/*` PUBLIC_API 등록 점검 |
+| 🟡 중간 | IMC v2 'Track B 미운영' ↔ 마켓플레이스 구현 모순 + 멘토 인증 이원화(자체 password_hash ↔ 모듈10 Supabase Auth) 정합 | 마케팅·마켓플레이스·Phase C | IMC v2 §1 갱신 + 모듈 10·12 인증 통합 방향 결정 |
