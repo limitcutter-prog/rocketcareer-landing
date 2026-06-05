@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -23,6 +23,7 @@
 | 9 | 랜딩페이지 | ✅ ACTIVE | landing-agent | `index.html`, `style.css` |
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
+| 12 | 멘토링 마켓플레이스 (양면) | 🚧 BUILT·미배포 | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
 
 ---
 
@@ -245,12 +246,12 @@ hook_type 3종 시각 변형: 숫자형 / 반전형 / 공감형
 
 **② CaseFileVideo — 익명 케이스 파일 시리즈 (v7, 2026-05-25 풀스크린 재설계)**
 ```
-🚀 브랜드 인트로(2026-06-03, 모든 영상 맨 앞 4.4s, 순차 연출): 발사 심볼(셰브론 V5, SVG·글리프안전)
-  ① 빠른 상승 발사(진동·덜컥·스피드 스미어, ~1초 만에 소멸) → ② "당신의 커리어, 발사 준비 완료"(셰브론 사라진 뒤 단독 등장)
-  → ③ "로켓커리어연구소"(샤인/글로우, 단독 유지) + 아래 "현직 HR과 함께, 커리어 런칭 플랫폼"(글로우/샤인).
-  INTRO_SEC=4.4, totalCaseFrames 반영(음성·자막 싱크 유지). 기존 팔레트 유지.
+🚀 브랜드 카드(2026-06-03, 영상 **맨 뒤 클로징 아웃트로** 4.4s, 순차): 발사 심볼(셰브론 V5, SVG·글리프안전)
+  ① 빠른 상승 발사(진동·덜컥·스피드 스미어) → ② "당신의 커리어, 발사 준비 완료" → ③ "로켓커리어연구소"(샤인/글로우) + "현직 HR과 함께, 커리어 런칭 플랫폼"으로 마무리.
+  ⚠️ **오프닝→클로징 이동(2026-06-03)**: 오프닝에 두니 쇼츠 초반 집중도가 깎여 **영상 끝**으로 이동. 시작은 기존대로 HOOK부터.
+  INTRO_SEC=4.4(브랜드 카드 길이), totalCaseFrames 반영(음성·자막 싱크 유지). 기존 팔레트 유지.
   **컨텐츠 상단 헤더** = CASE# + 로켓커리어연구소 + "현직 HR담당자와 함께, 커리어 런칭 플랫폼"(상시 노출). 하단 워터마크 = 브랜드명.
-구조(5씬): HOOK → CASE CONTEXT → PAIR×N(BEFORE/AFTER) → CLOSING → CTA  (앞에 INTRO 추가)
+구조(5씬+아웃트로): HOOK → CASE CONTEXT → PAIR×N(BEFORE/AFTER) → CLOSING → CTA → **브랜드 카드(클로징)**
   씬별 길이는 timing override + pair.duration으로 개별 제어(TTS 실측에 맞춤)
 v7 핵심:
   - 숫자 강조: highlightMetrics() — 숫자/단위/화살표를 앰버(#FFC83D)로 자동 강조
