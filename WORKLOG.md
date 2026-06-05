@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-06-05 23:39 — BEFORE/AFTER 인용구 텍스트 넘침(잘림) 수정
+
+**무엇을**
+- CaseFileVideo 인용구가 가로로 넘쳐 잘리던 버그 수정. 원인: 전 텍스트가 `wordBreak:'keep-all'` 단독이라 **공백 적은 긴 한글 원문이 줄바꿈 안 됨**.
+- ExcerptCard 인용구: 길이별 폰트 자동 축소(`fitQuoteSize` 56→48→42→36→32) + `overflowWrap:'anywhere'`. hook·diff·closing에도 `overflowWrap:'anywhere'` 추가.
+
+**왜**
+- BEFORE 원문(cases_career 실제 약점, 길이 통제 불가)이 길면 카드를 넘어 화면 밖으로 잘림 → 가독성·완성도 훼손.
+
+**영향 / 후속**
+- 렌더 로직만 변경(대본·구조 무관). 검증: 긴 무공백 BEFORE 원문 테스트 props로 2줄 wrap+축소 확인.
+- 후속(선택): 매우 긴 원문은 대본 단계에서 요약하는 룰도 고려 가능(현재는 렌더가 방어).
+
+**커밋**: `admin-tool` 72d19e2 / `landing` (이 sync 커밋)
+
+---
+
 ## 2026-06-05 23:27 — 브랜드 카드 오프닝→클로징 이동
 
 **무엇을**
@@ -20,6 +37,26 @@
 - 검증: 시작 프레임=HOOK, 끝 프레임=브랜드 카드 스틸 확인. 전체 렌더 정상.
 
 **커밋**: `admin-tool` (이 커밋) / `landing` (이 sync 커밋)
+
+---
+
+## 2026-06-05 23:26 — 멘토링 마켓플레이스 모듈 12 거버넌스 등재 (표류 시정)
+
+**무엇을**
+- 그간 ARCHITECTURE.md에 **전혀 없던** 양면 마켓플레이스를 **모듈 12**로 등재: 인벤토리 행 + 상세 섹션(페이지 7·API 11·신규 테이블 11) + 미결과제 3건 + 헤더.
+- 발견한 **거버넌스 모순** 명시: ① IMC v2 §1 "Track B(모두의커리어) 미운영" ↔ 실제 Phase 1 구현됨 ② 모듈 10 "멘토 포털 미시작" ↔ `/mentor` 포털·멘토 로그인 이미 구현(단 Supabase Auth 아닌 자체 `password_hash`).
+- `admin-tool` `feature/marketplace-phase1` 14커밋 **원격 백업 푸시**(그간 로컬 전용 → GitHub). main 미머지=미배포 상태 유지.
+
+**왜**
+- 사용자 "놓치고 있는 것" 점검 중, 핵심 작업이 **푸시 안 된 브랜치**에만 있어 `/sync-arch`가 한 번도 못 본 거버넌스 맹점 발견. 백업+등재로 가시화.
+
+**영향 / 후속**
+- 🔴 마켓플레이스 SQL 4종(setup→apply→auth→seed) 미실행 → `/showcase`·`/mentor` 동작 불가. Supabase 수동 실행 필요.
+- 🟡 main 머지·배포 결정 + `/api/showcase/*` PUBLIC_API 등록 점검(미등록 시 401).
+- 🟡 IMC v2 §1 갱신 + 멘토 인증 이원화(모듈 10·12) 통합 방향 결정.
+- ⚠️ 별건: 인코딩 DB(1.8GB·실제 이력서 PII) 백업 0 — git 부적합, 비공개 클라우드 백업 별도 결정.
+
+**커밋**: `admin-tool` fd8b3fe·ea6dc7e·544151e 외 (마켓플레이스 구현, 이번에 원격 백업) / `landing` (이 sync 커밋 — ARCHITECTURE·WORKLOG·admin-tool CLAUDE.md)
 
 ---
 
