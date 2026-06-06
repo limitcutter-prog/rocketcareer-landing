@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-06-07 (**모듈 12 마켓플레이스 프로덕션 배포** — admin-tool `feature/marketplace-phase1` → main FF 머지·푸시(`0abd512`)로 Vercel 자동배포 + 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료(11테이블·멘토 로그인 컬럼·시드). 모듈 12 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL 미실행'·'머지/배포 결정' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브'로 정합. ⚠️ main 직접 푸시가 auto모드 가드레일에 막혀 사용자가 `Bash(git push:*)` 권한 부여 후 단독 푸시로 진행) ←→ 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -23,7 +23,7 @@
 | 9 | 랜딩페이지 | ✅ ACTIVE | landing-agent | `index.html`, `style.css` |
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
-| 12 | 멘토링 마켓플레이스 (양면) | 🚧 BUILT·미배포 | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
+| 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07) | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
 
 ---
 
@@ -565,6 +565,7 @@ Supabase RPC: search_similar_cases(query_embedding, match_count, job_filter, min
 **역할:** 유튜브 유입 → 서비스 소개 → 진단 신청 CTA → `/api/submit-diagnosis` 연결
 
 **배포:** `rocketcareer-landing.vercel.app`
+**유입 단축 URL:** `https://bit.ly/3RSgWMy` → vercel 배포 URL로 포워딩
 
 **파일:**
 ```
@@ -621,10 +622,10 @@ app/admin/users/ (신규) ← 계정 관리 페이지
 
 ### 🚧 모듈 12 — 멘토링 마켓플레이스 (양면 거래) — BUILT·미배포
 
-> **상태:** `feature/marketplace-phase1` 브랜치에 구현됨. **origin/main 미머지 = 미배포.** 신규 SQL 4종 미실행 추정(Supabase 수동). PRD "로켓커리어 멘토링 마켓플레이스 Phase 1~3"(PRD 문서 자체는 git 미추적).
+> **상태:** ✅ **배포됨 (2026-06-07).** `feature/marketplace-phase1` → origin/main FF 머지·푸시(`0abd512`) → Vercel 자동배포. 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료. PRD "로켓커리어 멘토링 마켓플레이스 Phase 1~3"(PRD 문서 자체는 git 미추적). 단 멘토 인증은 자체 `password_hash`(모듈10 Supabase Auth와 별개) — 통합 방향 미정.
 >
 > ⚠️ **거버넌스 모순 (정합 필요):**
-> - **IMC v2 §1**은 "플랫폼(미래): 모두의커리어 (Track B, **현재 미운영**)"이라 명시 — 그러나 이 모듈이 곧 Track B이고 이미 Phase 1 구현됨 → IMC v2 갱신 필요.
+> - ~~**IMC v2 §1** "Track B 미운영"~~ → ✅ **정합 완료 (2026-06-07)**: 배포로 Track B Phase 1 라이브 → IMC v2 §1을 "Phase 1 라이브"로 갱신함.
 > - **모듈 10(Phase C)**은 멘토 포털 "📋 미시작"이라 명시 — 그러나 `/mentor` 포털·멘토 로그인이 이미 구현됨. 단 **Supabase Auth(JWT)가 아니라 자체 `password_hash` 로그인**이라 모듈 10 설계와 별개 인증 → 통합 방향 결정 필요.
 
 **역할:** 공개 멘토 쇼케이스 + 멘토 온보딩(지원→심사→승인) + 멘토 포털(받은 신청 수락/거절·프로필) + 양면 거래(신청→매칭→주문→결제→정산). 기존 크몽 후기·구간3 진단 퍼널("사전 상담")을 흡수해 자체 마켓플레이스화. 브랜드 컬러(NAVY `#1B2B4B` / GREEN `#27AE60`) 정합.
@@ -796,6 +797,6 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 | 🟡 중간 | YouTube Data API v3 연동 | 트렌드 | API 키 발급 + 검색/업로드 라우트 |
 | 🟢 낮음 | Phase C (Supabase Auth 전환) | Phase C | 스펙 완성됨, 구현 미시작 |
 | 🟢 낮음 | YouTube 자동 업로드 | 영상 자동생성 | Phase C 완료 후 진행 |
-| 🔴 높음 | 마켓플레이스 SQL 4종 미실행 (setup→apply→auth→seed) | 마켓플레이스(12) | Supabase 수동. 11개 테이블·멘토 로그인 컬럼·시드. 미실행 시 `/showcase`·`/mentor` 동작 불가 |
-| 🟡 중간 | 마켓플레이스 main 머지·배포 결정 | 마켓플레이스(12) | `feature/marketplace-phase1` 미머지=미배포. 머지 시 Vercel 배포 + `/api/showcase/*` PUBLIC_API 등록 점검 |
-| 🟡 중간 | IMC v2 'Track B 미운영' ↔ 마켓플레이스 구현 모순 + 멘토 인증 이원화(자체 password_hash ↔ 모듈10 Supabase Auth) 정합 | 마케팅·마켓플레이스·Phase C | IMC v2 §1 갱신 + 모듈 10·12 인증 통합 방향 결정 |
+| ✅ 완료 | 마켓플레이스 SQL 4종 실행 (setup→apply→auth→seed) | 마켓플레이스(12) | 2026-06-07 Supabase 실행 완료 (11개 테이블·멘토 로그인 컬럼·시드) |
+| ✅ 완료 | 마켓플레이스 main 머지·배포 | 마켓플레이스(12) | 2026-06-07 `feature/marketplace-phase1`→main FF 머지·푸시(`0abd512`)·Vercel 배포. PUBLIC_API(showcase·mentor) 등록 확인됨 |
+| 🟡 중간 | 멘토 인증 이원화(자체 password_hash ↔ 모듈10 Supabase Auth) 통합 방향 | 마켓플레이스·Phase C | IMC v2 §1 'Track B' 정합은 완료(2026-06-07). 모듈 10·12 인증 통합 방향만 미정 |

@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-06-07 — 멘토링 마켓플레이스(모듈 12) 프로덕션 배포
+
+**무엇을**
+- `feature/marketplace-phase1` → main **FF 머지·푸시**(admin-tool `0abd512`) → Vercel 자동배포. 마켓플레이스 3커밋(쇼케이스·지원/심사·멘토포털) + 영상/IMC/BGM/인용구 개선 13커밋 = 16커밋 라이브.
+- 신규 **SQL 4종**(setup→apply→auth→seed) Supabase 실행 완료 — 11테이블·멘토 로그인 컬럼·시드(영석님 1인+서비스2+후기·피드).
+- 배포 전 점검: middleware PUBLIC_API(showcase·mentor login/logout) 등록 확인, 공개 read API 4종 graceful(테이블 없어도 무중단), 인증 플로우(지원→어드민 승인 UI→PBKDF2 로그인) 완결, `tsc --noEmit` 통과.
+
+**왜**
+- 모듈 12가 브랜치에만 있어 "BUILT·미배포"로 죽어있던 양면 마켓플레이스를 실서비스화(사용자 "지금 라이브" 결정).
+
+**영향 / 후속**
+- 모듈 12: 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL'·'머지/배포' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브' 정합.
+- ⚠️ main 직접 푸시가 auto모드 가드레일에 차단 → 사용자가 `Bash(git push:*)` 권한 부여 후 **단독** `git push`로 진행(복합/`git -C`는 룰 미매칭).
+- 🟡 후속: ① Vercel 빌드·`/showcase` 스모크 테스트 ② 멘토 인증 이원화(password_hash↔모듈10 Supabase Auth) 통합 ③ 결제 Phase 3 ④ Bitly 트래킹 유료 이슈로 보류(무료 대안=lead_analytics UTM, 별도 스코핑).
+- `admin-tool/CLAUDE.md` showcase/mentor 행 '배포' 갱신(미커밋).
+
+**커밋**: `admin-tool` `0abd512`(→main 배포) / `landing` (이 sync 커밋)
+
+---
+
 ## 2026-06-06 19:56 — 인용구 과길게 추출 문제 (발췌 제한 + 렌더 클램프)
 
 **무엇을**
