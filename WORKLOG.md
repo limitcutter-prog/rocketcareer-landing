@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-06 19:56 — 인용구 과길게 추출 문제 (발췌 제한 + 렌더 클램프)
+
+**무엇을**
+- BEFORE/AFTER 인용구가 원문 문단을 통째로 가져와 카드를 넘치던 문제. **2단 방어**로 시정.
+- ① 생성: before = 약점 핵심 구절만 발췌(≤45자, 원문 표현 유지, 길면 '…'), after 명사형 ≤40자, diff ≤35자. **문단 통째 인용 금지.** (`casefile-script.ts` SYSTEM_PROMPT 룰2b + `generateSubtitlesFromNarration`)
+- ② 렌더: ExcerptCard 인용구 `-webkit-line-clamp:4`(기존 autofit·overflowWrap에 더해 어떤 데이터도 카드 내 고정).
+- 룰 4곳 동기화: casefile-script.ts / remotion CLAUDE.md / casefile-script.md / casefile-qa.md.
+
+**왜**
+- before 원문(cases_career improvements[].before_sentence)이 장문 run-on이면 그대로 들어가 카드 깨짐. 직전 wrap 수정(23:39)은 잘림만 막았고, 텍스트量 자체가 과함 → 추출 단계에서 발췌.
+
+**영향 / 후속**
+- 신규 생성분부터 ≤45자 발췌로 ~2줄. 기존 장문 데이터도 렌더 클램프로 방어. 렌더·구조 무관.
+
+**커밋**: `admin-tool` 0abd512 / `landing` (이 sync 커밋)
+
+---
+
 ## 2026-06-05 23:43 — /sync-arch: IMC 정합 표류 시정 (브랜드 카드 오프닝→클로징)
 
 **무엇을**
