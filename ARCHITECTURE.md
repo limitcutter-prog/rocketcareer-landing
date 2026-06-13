@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-07 (**모듈 12 마켓플레이스 프로덕션 배포** — admin-tool `feature/marketplace-phase1` → main FF 머지·푸시(`0abd512`)로 Vercel 자동배포 + 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료(11테이블·멘토 로그인 컬럼·시드). 모듈 12 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL 미실행'·'머지/배포 결정' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브'로 정합. ⚠️ main 직접 푸시가 auto모드 가드레일에 막혀 사용자가 `Bash(git push:*)` 권한 부여 후 단독 푸시로 진행) ←→ 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-06-13 (**S1/S2 리포트 구조 재설계** — `S1GroupCard`·`S2ExperienceMapping`·`RoadmapInfo` 신규 인터페이스. S1=그룹별 접근전략 카드, S2=경험×그룹 포지셔닝 매트릭스, 전 회차=5단계 로드맵 인디케이터. S2 리포트 생성 시 S1 ai_suggestion 자동참조. `RESEND_FROM_EMAIL=noreply@rocketcareer.co.kr` 반영. tsc 에러 0) ←→ 2026-06-11 (**모듈 13 멘토링 운영(딜리버리) 시스템 등재** — 두 운영 문서(SOP v1.1·운영스크립트 v1.0, `admin-tool/mentoring tool/files/`) 평가 → 어드민의 "네 번째 축"인 멘토링 실행(딜리버리)이 비어있음 확인(녹취→STT→리포트 **코드 0건**, `lib/pdf.ts` generatePdf **throw 비활성**). 모듈 13 신규 등재(📋 PLANNED). **상품모델 결정**: `makeup`="회사선택→이력서 Make-up"(200,000원)=SOP 5세션(S0 OT~S4). **FROZEN 우회**: 회차·리포트는 신규 테이블(case_journeys/case_sessions/session_reports/case_artifacts) 분리, 모듈1(mentees/contracts/session_notes) 무수정·FK 읽기만. 계약 문서: 루트 `PLAN.md`) ←→ 2026-06-07 (**모듈 12 마켓플레이스 프로덕션 배포** — admin-tool `feature/marketplace-phase1` → main FF 머지·푸시(`0abd512`)로 Vercel 자동배포 + 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료(11테이블·멘토 로그인 컬럼·시드). 모듈 12 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL 미실행'·'머지/배포 결정' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브'로 정합. ⚠️ main 직접 푸시가 auto모드 가드레일에 막혀 사용자가 `Bash(git push:*)` 권한 부여 후 단독 푸시로 진행) ←→ 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -24,6 +24,8 @@
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
 | 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07) | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
+| 13 | 멘토링 운영 (딜리버리) | 🚧 2단계 BUILT (멘티 리포트 완료) | — (미지정) | `admin-tool/app/admin/mentees/[id]/JourneyPanel.tsx`, `app/api/mentees/[id]/journey/`, `lib/mentoring/`, `supabase-mentoring-ops-setup.sql` |
+| 14 | AI 운영체계 (자율 협업) | ✅ ACTIVE (2026-06-13) | chief-of-staff·career-lab-lead·6본부장 | `org/`(PROTOCOL·IMPACT_MAP·CHARTER·OBJECTIVES·LEDGER·ORG_CHART·state), `.claude/agents/*-head.md`, `.claude/commands/{order,standup,strategy-review,org-audit}.md` |
 
 ---
 
@@ -675,6 +677,79 @@ activity_feed        — 쇼케이스 실시간 활동 피드 소스
 
 ---
 
+### 🚧 모듈 13 — 멘토링 운영(딜리버리) — 1단계 BUILT (SQL 실행 대기, 2026-06-11)
+
+> **상태:** ✅ 1단계 + S1 AI 보조 동작(회차 S0~S4 운영 + 그룹화 AI 제안). SQL 적용·E2E 검증 완료(여정 생성·회차 PATCH·이용기간 OT+3개월·Claude 그룹화·DB 저장). 피드백 반영: ① `makeup` 계약 있을 때만 노출 · ③ 회차 순차 잠금. 2~3단계·타 회차 AI 미착수. **계약 문서: 루트 `PLAN.md`**.
+> **SoT:** `admin-tool/mentoring tool/files/멘토링_운영표준_SOP_v1.md`(SOP v1.1) · `멘토_운영스크립트_v1.md`(v1.0)
+
+**역할:** 결제(makeup 계약) 이후 **5세션(S0~S4) 멘토링 실행**을 운영. 회차 진행·과제 게이트·재량 판단 기록 →
+**녹취→STT→8섹션 리포트→멘토 검수→PDF**(SOP §2.4 자동화 1순위) → 종료까지 케이스 라이프사이클 관리.
+어드민의 "네 번째 축" — ①진단(FROZEN)·②마케팅·③마켓플레이스에 이은 **딜리버리 축**.
+
+**상품 매핑 (확정 2026-06-11):** SOP "단일 OT+4회차=5세션" = `makeup`("회사선택→이력서 Make-up", 200,000원).
+S0=OT(진단) / S1=타깃 그룹화 / S2=경험 디깅 / S3=기본형 문서 / S4=파생·종료. 나머지 5종은 단발 서비스(회차 비대상).
+
+**신규 테이블 (🔒 모듈1 FROZEN 무수정 — mentees/contracts는 FK 읽기조인만):**
+```
+case_journeys    — makeup 계약 1건 = 멘토링 여정 (track 신입/경력, deadline=OT+3개월, 휴면/긴급)
+case_sessions    — 회차 S0~S4 (status, 과제 게이트, recording_url, stt_text, judgment_note 재량 1줄)
+session_reports  — 표준 8섹션 리포트 (sections JSONB, status draft/reviewed/sent, pdf_url)
+case_artifacts   — 작업 산출물 (target_groups·appeal_tags·representative_experiences·placeholders, 전부 JSONB)
+```
+> 설계 원칙(SOP §0·§6): 절차·산출물은 구조화 / 판단은 재량+근거기록 / **6축 점수 멘토 비개입(보정 필드 없음)** / 어필태그 개방형.
+
+**단계 로드맵 (상세 `PLAN.md`):**
+```
+0 ✅ 거버넌스 등재 (이 섹션 + PLAN.md)
+1 ✅ 멘티 상세 회차(S0~S4) 탭 + 과제 게이트 + 재량 기록 — SQL + journey/sessions API + JourneyPanel.tsx. tsc 통과. ⚠️ SQL 실행 대기
+2    녹취→STT(클로바/Whisper)→8섹션 리포트(Claude)→검수→PDF. ⚠️ lib/pdf.ts throw 복구 선행 (자동화 1순위)
+3    멘토 포털에 운영 스크립트·S0 체크리스트·메시지카드9·실수Top7 + 예외처리(긴급/휴면/리스크) 상태머신
+```
+
+**1단계 산출물 (2026-06-11):** `supabase-mentoring-ops-setup.sql`(case_journeys·case_sessions) · `app/api/mentees/[id]/journey/route.ts`(GET·POST 5회차 시드·PATCH) · `.../journey/sessions/[sid]/route.ts`(PATCH) · `app/admin/mentees/[id]/JourneyPanel.tsx`(page.tsx 삽입). SESSION_BLUEPRINT(S0=무준비·S1~S4 과제전제)는 journey route 상수.
+
+**UI 개선 (피드백 반영):** ① `makeup` 계약이 있을 때만 멘토링 진행 섹션 노출(없으면 숨김, 기존 여정 있으면 보존) · ③ 회차 순차 잠금(이전 회차 `done` 전까지 🔒 — 상태변경·펼침·편집 비활성, S0 완료→S1 해제…).
+
+**AI 보조 레이어 (피드백②, S1 그룹화 1차 — 2026-06-11):** `lib/mentoring/group-suggest.ts`(Claude sonnet-4-6 — 공고목록 → 직무 테마 그룹·제외사유·직무개념 교정 **제안**, 멘토 검수) · `.../sessions/[sid]/suggest-groups/route.ts`(POST) · S1 회차 카드 UI. `case_sessions`에 `ai_suggestion`(JSONB)·`assignment_input`(TEXT) 추가. 실 Claude 호출 E2E 검증 완료(SOP S1 로직 재현: 테마 묶기·"생산관리 vs 공정품질" 교정·커리어자산 제외). ⚠️ 공고명 원문 보존 6/10(모델 특성 — 후속 튜닝 대상). 설계원칙: **AI는 제안만, 점수·판단 비개입**(SOP §0).
+
+**AI 보조 — S2 경험 합리화 (2026-06-11):** `lib/mentoring/experience-suggest.ts` + `.../sessions/[sid]/suggest-experience/route.ts`(**S1 그룹 자동 참조** → 그 군 언어로 번역) + S2 카드 UI. 합리화 번역(experience 원문→after)·과대표현 정직화·리스크 소재(종교 등)·대표경험 후보. `ai_suggestion` 컬럼 공용(추가 SQL 없음). **환각 해결**: 입력을 줄단위 항목으로 번호 매기고 `experience`를 **코드가 입력 원문으로 강제 교체**(ref 매핑) → 창작·누락 0(6/6 원문 일치 검증, 종교 리스크 분류 포함). 긴 입력 시 출력 잘림 → ① **잘림 복구**(`repairTruncatedJson`: 잘려도 완료 항목까지 살려 502 방지) ② **experience 모델 생성 생략**(빈 문자열, 코드가 ref로 원문 복원 → 출력 토큰 절반) + max_tokens 8000. **20항목 48초·원문 100%·창작/누락 0·502 없음** 검증. 설계: AI는 번역·플래그만, experience 원문 보존·점수 비개입(SOP §0).
+
+**✅ 2단계 — 멘티 전달 리포트 (2026-06-13):** 회차 AI 결과 → **멘티용 리포트 생성**(`lib/mentoring/report-generator.ts` sonnet-4-6 — headline·맥락·임팩트·highlights·액션, SOP §5 멘티 톤 + **현직 인사담당자 시각**(채용담당자 평가 언어)·합니다체 공감형) → **react-pdf PDF**(`report-pdf.tsx`, Noto Sans KR ttf 9종) → **다운로드/메일**(Resend 첨부 — `noreply@rocketcareer.co.kr`). API: `.../report/route.ts`(POST 생성·PATCH 편집) · `report/pdf`(GET) · `report/send`(POST). `case_sessions`에 `mentee_report`(JSONB)·`report_status`·`report_sent_at` 추가. UI: SessionCard 리포트 영역(생성·미리보기·PDF·메일). ⚠️ 기존 `lib/pdf.ts`(throw)는 진단리포트(모듈11)용 — **무관**(react-pdf 신규 경로). dev 서버는 무거운 AI+react-pdf 연속 호출에 OOM 가능 → `scripts/dev.mjs`로 8GB(프로덕션 무관).
+
+**📐 S1/S2 리포트 구조 재설계 (2026-06-13):** 단순 줄글 highlights에서 세션별 특화 구조로 전면 개선.
+- **S1** = `S1GroupCard[]`(`group_name`·`fit_summary`·`appeal_points[]`·`approach_tips[]`·`hr_read` — 그룹별 접근전략 카드). highlights 대신 그룹카드 렌더.
+- **S2** = `S2ExperienceMapping[]`(`experience` × `per_group[group_name·positioning·key_message]` — 동일경험이 그룹별로 어떻게 다르게 어필되는지 매트릭스). report/route.ts가 S2 생성 시 S1 `ai_suggestion` 자동조회 → `s1Context`로 전달(그룹명 참조).
+- **전 회차** = `RoadmapInfo`(step 1~5 — 코드가 삽입, AI 비생성). PDF·UI 모두 5단계 인디케이터 렌더.
+- `report-pdf.tsx`에 `Roadmap`·`GroupCards`·`ExperienceMatrix` 컴포넌트 추가. `JourneyPanel.tsx` UI 미리보기 동기화. tsc 에러 0.
+
+**재사용 자산:** `app/admin/mentees/[id]/page.tsx`(계약·메모·파일 그릇), `STAGE_TEMPLATES`(`app/api/mentees/[id]/contracts/route.ts` — makeup 단발 stages를 회차로 대체), `app/mentor/`(모듈12 포털, 3단계 스크립트 임베드).
+
+---
+
+### ✅ 모듈 14 — AI 운영체계 (자율 협업 오케스트레이션)
+
+> **역할:** 사장/커리어랩장의 오더를 받아 **영향받는 부서만 자동 연결** → 협업·실행·교차검수·정합·보고까지 구동하는 메타 레이어. 코드 모듈(1~13)의 **상위 운영 거버넌스**.
+> **트리거:** 하이브리드 트리아지(`CLAUDE.md` 최상단) → 풀 프로토콜은 `/order`.
+
+**구성 (`org/`):**
+```
+PROTOCOL.md    — 10단계 오더 인테이크 절차 (트리아지→영향판정→부서선별→협업→실행→교차검수→정합→보고→피드백)
+IMPACT_MAP.md  — 영향범위 라우팅 테이블 (이 ARCHITECTURE 의존성·변경임팩트·IMC 결정화)
+CHARTER.md     — 객관성 헌장·증거 등급·자율성 경계·리스크 레지스트리·교차검수 페어링·금지 원칙
+OBJECTIVES.md  — 회사 목표 (커리어랩장 소유)
+LEDGER.md      — 피드백 원장 (분신 소유, 지시→진행→완료→검증, 근거 없이 검증 불가)
+ORG_CHART.md   — 부서·에이전트 R/R 맵 (경영지원실 소유)
+state/*.md     — 6본부 상태파일 (현황·목표정합·블로커·미반영피드백)
+```
+
+**에이전트 (`.claude/agents/`):** `chief-of-staff`(분신)·`career-lab-lead`(커리어랩장) + 6 본부장(`rnd-head`·`marketing-head`·`bizdev-head`·`sales-head`·`it-security-head`·`management-support-head`). 본부장은 분석·제안 전담, 실행은 분신이 코드 에이전트(계층3, 기존 6종) 위임.
+
+**커맨드:** `/order`(인테이크) · `/standup`(일일·분신) · `/strategy-review`(주간·커리어랩장) · `/org-audit`(객관성 검증).
+
+> ⚠️ **정합:** `IMPACT_MAP.md`는 이 ARCHITECTURE.md(의존성 맵·변경 임팩트 체크표·📣 마케팅 레이어)의 결정화다. ARCHITECTURE가 바뀌면 `IMPACT_MAP.md`도 동기화한다(`/sync-arch` 점검 대상). 운영체계는 FROZEN(모듈1)을 읽기조차 하지 않는다.
+
+---
+
 ## 의존성 맵
 
 ```
@@ -708,6 +783,7 @@ activity_feed        — 쇼케이스 실시간 활동 피드 소스
 | script-generator.ts 인터페이스 | 어드민 UI, 영상생성 | API 응답 타입 일치 확인 |
 | mentees/mentors 컬럼 | 구간3 🔒, Phase C | FROZEN 구간 수정 금지 |
 | lib/supabase.ts | 전 모듈 | 기존 export 유지 여부 |
+| case_* 신규 테이블 | 멘토링 운영(13) | mentees/contracts FK 읽기조인만, 모듈1 FROZEN 무수정 |
 
 ---
 
@@ -748,6 +824,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY    ← Phase C 시작 시 추가
 
 # 이메일
 RESEND_API_KEY
+RESEND_FROM_EMAIL  ← 발신 주소 (현재: noreply@rocketcareer.co.kr — 도메인 검증 완료, 2026-06-13)
 EDITOR_EMAIL
 
 # 마케팅
@@ -781,6 +858,10 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 | `/shorts-strategy` | 쇼츠 콘텐츠 전략 (벤치마크·포맷·훅·CTA) |
 | `/video-production` | 영상 자동생성 연구·결정 현황 |
 | `/project-state` | 프로젝트 현황 요약 |
+| `/order` | 오더 인테이크 — 영향범위 판정·부서 선별·교차검수·두괄식 보고 (운영체계) |
+| `/standup` | 일일 운영 점검 (분신) — 본부 현황 종합·LEDGER 추진 |
+| `/strategy-review` | 주간 목표 점검 (커리어랩장) — OBJECTIVES 갱신·개선 지시 |
+| `/org-audit` | 객관성 검증 — LEDGER 완료/검증 주장을 실제 근거와 대조 |
 
 ---
 
@@ -800,3 +881,6 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 | ✅ 완료 | 마켓플레이스 SQL 4종 실행 (setup→apply→auth→seed) | 마켓플레이스(12) | 2026-06-07 Supabase 실행 완료 (11개 테이블·멘토 로그인 컬럼·시드) |
 | ✅ 완료 | 마켓플레이스 main 머지·배포 | 마켓플레이스(12) | 2026-06-07 `feature/marketplace-phase1`→main FF 머지·푸시(`0abd512`)·Vercel 배포. PUBLIC_API(showcase·mentor) 등록 확인됨 |
 | 🟡 중간 | 멘토 인증 이원화(자체 password_hash ↔ 모듈10 Supabase Auth) 통합 방향 | 마켓플레이스·Phase C | IMC v2 §1 'Track B' 정합은 완료(2026-06-07). 모듈 10·12 인증 통합 방향만 미정 |
+| 🔴 높음 | **모듈13 1단계 SQL 실행**: `supabase-mentoring-ops-setup.sql` Supabase 적용 (코드 완료·tsc 통과, 미실행 시 회차 API 500) | 멘토링 운영(13) | case_journeys·case_sessions. makeup 계약 연결. FROZEN 무수정 |
+| 🟡 중간 | **모듈13 2단계 잔여**: 녹취→STT→8섹션 리포트(SOP §5 표준형) — SOP 자동화 1순위. 멘티 전달 리포트(report-generator+PDF+Resend+S1/S2 구조) ✅ 완료(2026-06-13) | 멘토링 운영(13) | 녹취 업로드→STT(클로바/Whisper) 구현 필요 |
+| 🟢 낮음 | **모듈13 3단계**: 멘토 스크립트·체크리스트·메시지카드9 + 예외처리 상태머신 | 멘토링 운영(13) | 모듈12 멘토 포털 연동 |

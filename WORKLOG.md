@@ -5,6 +5,67 @@
 
 ---
 
+## 2026-06-13 — S1/S2 리포트 구조 재설계 + RESEND 도메인 반영
+
+**무엇을**
+- `report-generator.ts`: `S1GroupCard`·`S2ExperienceMapping`·`RoadmapInfo` 인터페이스 신규 추가. S1 전용 `group_cards[]`(fit_summary·appeal_points·approach_tips·hr_read), S2 전용 `experience_matrix[]`(experience × per_group[positioning·key_message]), 전 회차 `roadmap`(step 1~5, 코드 삽입). `buildUserContent()` 분기로 세션별 프롬프트 분리.
+- `report/route.ts`: S2 생성 시 S1 `ai_suggestion` 자동조회 → `s1Context` 전달 (그룹명 참조로 포지셔닝 매트릭스 품질 향상).
+- `report-pdf.tsx`: `Roadmap`(5단계 인디케이터)·`GroupCards`(네이비 헤더 + 섹션별 구조)·`ExperienceMatrix`(경험 헤더 + 그룹행) 컴포넌트 추가. `[style, active && style2]` → 삼항 연산자 수정(react-pdf TS 호환).
+- `JourneyPanel.tsx`: UI 미리보기에 로드맵·그룹카드·매트릭스 동기화.
+- `.env.local`: `RESEND_FROM_EMAIL=noreply@rocketcareer.co.kr` (도메인 검증 완료).
+- `tsc --noEmit` 에러 0 검증.
+
+**왜**
+- 사용자 피드백: S1은 단순 줄글이 아닌 그룹별 카테고라이즈된 정보 필요. S2는 동일 경험이 그룹마다 다르게 어필되는 매트릭스 형태 필요. 발신 주소 `onboarding@resend.dev` → 브랜딩 개선.
+
+**영향 / 후속**
+- 🔒 FROZEN 무수정. 기존 리포트 구조(highlights) 호환 유지(S1 없으면 highlights 렌더).
+- 기존에 생성된 `mentee_report` JSONB는 group_cards/experience_matrix 없이 저장됐으므로 재생성 권장(재생성 버튼 제공 중).
+- 후속: 녹취→STT→8섹션 리포트(2단계 잔여, SOP 자동화 1순위).
+
+**커밋**: `admin-tool` (미커밋) / `landing` (이 sync 커밋)
+
+---
+
+## 2026-06-13 01:17 — S2 경험 합리화 AI + 환각·파싱·OOM 해결
+
+**무엇을**
+- S2 경험 디깅 AI: `experience-suggest.ts`(합리화 번역·과대표현 정직화·리스크(종교 등)·대표경험) + `suggest-experience` API(**S1 그룹 자동참조**) + S2 카드 UI. `ai_suggestion` 컬럼 공용(GroupSuggestion|ExperienceSuggestion union).
+- 환각 차단: 입력 줄단위 `ref` 매핑 + `experience` **원문 강제 교체(코드)** → 창작/누락 0(20항목 검증).
+- 파싱 잘림 해결: `max_tokens` 8000 + 출력 압축(experience 모델 생성 생략) + `repairTruncatedJson`(잘림 복구 → 502 방지).
+- dev OOM("인터널 오류") 해결: `scripts/dev.mjs` 래퍼(NODE_OPTIONS=8192) → `package.json` dev 교체. cross-env는 네트워크 차단 미설치라 의존성 0 node 래퍼.
+
+**왜**
+- "S2 개선" 피드백: AI 결과 신뢰도(창작 제거)·실사용 안정성(긴 입력 502·dev 인터널오류=OOM) 확보.
+
+**영향 / 후속**
+- 🔒 FROZEN 무수정. tsx 직접 + dev API E2E 검증(20항목 502 없음·~48s).
+- **후속(사용자 신규 요청)**: S1/S2 결과를 **멘티 전달용 리포트**로 가공(직무·맥락·임팩트·세부설명) + **PDF UI/UX·Export·메일 발송** → 모듈13 2단계(`lib/pdf.ts` throw 복구 선행).
+
+**커밋**: `admin-tool` (미커밋) / `landing` (해당 없음)
+
+---
+
+## 2026-06-11 23:32 — 모듈13 멘토링 운영 1단계 + S1 AI 그룹화 (신규 딜리버리 축)
+
+**무엇을**
+- 모듈13(멘토링 딜리버리) 신규 등재 → 1단계: `case_journeys`·`case_sessions` 테이블, journey/sessions API, `JourneyPanel.tsx`(회차 S0~S4 운영·과제 게이트·재량 기록·이용기간 OT+3개월·트랙·긴급/휴면).
+- 피드백 반영: ① `makeup` 계약 있을 때만 노출 · ③ 회차 순차 잠금(이전 `done` 전까지 🔒).
+- AI 보조 레이어 첫 구현 — **S1 그룹화**: `lib/mentoring/group-suggest.ts`(Claude sonnet-4-6) + `suggest-groups` API + S1 카드 UI. `case_sessions.ai_suggestion`(JSONB)·`assignment_input`(TEXT) 추가.
+- E2E 검증: 여정 생성·회차 PATCH·실 Claude 그룹화·DB 저장. SOP S1 재현(직무테마 묶기·"생산관리 vs 공정품질" 교정·커리어자산 제외).
+
+**왜**
+- SOP v1.1·운영스크립트가 정의한 "결제 후 5세션 실행" 딜리버리 축이 어드민에 비어 있었음(녹취→리포트 코드 0건). `makeup`("회사선택→이력서 Make-up")=SOP 5세션 매핑. FROZEN 우회로 신규 `case_*` 테이블 분리.
+
+**영향 / 후속**
+- 🔒 FROZEN(mentees/contracts/session_notes) 무수정·FK 읽기조인만. SQL 2회 실행됨(테이블 + AI컬럼).
+- 후속: S1 공고명 보존 6/10 튜닝 · S2 경험디깅 AI(진행 중) · 2단계 녹취→STT→리포트(`lib/pdf.ts` throw 복구 선행).
+- 미커밋(admin-tool 통째 untracked) · 검증용 테스트 여정(멘티 39a678f1) 잔존.
+
+**커밋**: `admin-tool` (미커밋) / `landing` (해당 없음)
+
+---
+
 ## 2026-06-07 — 멘토링 마켓플레이스(모듈 12) 프로덕션 배포
 
 **무엇을**
