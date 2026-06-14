@@ -142,6 +142,12 @@ ul  { list-style: none; }
 .nav-links { display: flex; gap: 24px; flex: 1; }
 .nav-links a { font-size: .88rem; font-weight: 500; color: var(--gray-5); transition: color var(--t); }
 .nav-links a:hover { color: var(--navy); }
+/* 멘토 매칭 — 무료 진단(주력) 옆 보조 링크. 덜 튀는 슬레이트색 */
+.header-cta { display: flex; align-items: center; gap: 16px; }
+.nav-mentor-link {
+  font-size: .85rem; font-weight: 600; color: #8C97A8; white-space: nowrap; transition: color var(--t);
+}
+.nav-mentor-link:hover { color: var(--navy); }
 .hamburger {
   display: none; flex-direction: column; gap: 5px;
   background: none; border: none; cursor: pointer; padding: 4px; margin-left: auto;
@@ -640,6 +646,7 @@ ul  { list-style: none; }
 @media (max-width: 960px) {
   .nav-links { display: none; }
   .site-header .btn-primary { display: none; }
+  .header-cta { display: none; }
   .hamburger { display: flex; }
 
   .proof-grid { grid-template-columns: repeat(2, 1fr); }
