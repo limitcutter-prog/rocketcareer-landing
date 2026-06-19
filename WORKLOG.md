@@ -5,6 +5,173 @@
 
 ---
 
+## 2026-06-18 14:51 — 멘티 포털(멘티 화면) 신규 구축 — S0~S4 풀 딜리버리 (Phase A~C 코드완료·tsc 0)
+
+**무엇을**
+- **멘티 인증(매직링크·passwordless)**: `lib/auth.ts` 추가 `createMenteeToken/verifyMenteeToken`(`mentee_auth` 7일) + `createMenteeLink/verifyMenteeLink`(7일·`mlink:` 네임스페이스로 세션 오용 차단). `middleware.ts` 멘티 게이트 + `PUBLIC_API`(login/verify/logout) + matcher `/mentee/:path*`. mentees 스키마 무수정(stateless).
+- **포털 UI**: `app/mentee/login`(이메일→링크) + `app/mentee/page.tsx`(여정 요약·S0~S4 로드맵·순차잠금·개인 TO-DO) + `app/mentee/forms.tsx`(회차 구조화 폼 S0 진단체크리스트/S1 Roadmap/S2 경험시트/S3·S4 업로드·파일 업로더·리포트뷰).
+- **제출 파이프라인**: `/api/mentee/{login,verify,logout,me}` + `sessions/[sid]`(PATCH → `mentee_submission` JSONB + `assignment_input` 직렬화 + `assignment_done`) + `.../files`(mentee-files·`uploaded_by='mentee'`·signed URL) + `.../report(+pdf)`(sent만, `renderReportPdf` 재사용). 공용 `lib/mentee-portal.ts`(인증·소유권·노출 화이트리스트·직렬화).
+- **멘토 글루**: `JourneyPanel.tsx` "멘티 초대"(매직링크 발송·링크 복사) + S1/S2 "멘티 제출됨" 배지(`aiInput`이 `assignment_input` 자동 prefill → 기존 AI 그룹화/합리화 무수정 동작). `/api/mentees/[id]/journey/invite`.
+- **SQL**: `supabase-mentee-portal.sql`(case_sessions.mentee_submission/submitted_at·files.session_id — ADD IF NOT EXISTS).
+
+**왜**
+- 멘토 화면(JourneyPanel)은 있으나 멘티 셀프 제출 화면 0건. 멘토가 크몽 메시지에서 받아 손으로 붙여넣던 구조(SOP §2.3 데이터 누수 리스크)를 멘티 셀프 제출로 전환. 사장 시스템 구상(`필요작업 구조화.xlsx` "멘티로그인→관리페이지→자료 분석→TO-DO") 실현. 입력 항목 = SOP §3·운영스크립트 회차 명세 그대로.
+
+**영향 / 후속**
+- 🔒 FROZEN 무수정: mentees/diagnoses/contracts 읽기조인만. 쓰기는 case_sessions(모듈13)·files(공용)·신규 컬럼·신규 `/api/mentee/*`·lib/auth 추가분.
+- 보안: 전 `/api/mentee/*` 소유권 검증(token menteeId===journey.mentee_id), `safeSession`이 judgment_note·ai_suggestion·stt_text 비노출, mentee_report는 sent만.
+- 검증: `tsc --noEmit` 0 에러. **후속(사장 승인 영역)**: ① `supabase-mentee-portal.sql` 적용 ② 라이브 E2E 스모크(초대→링크→제출→JourneyPanel 자동표시→리포트) ③ 매직링크 메일 발송. ⚠️ 로컬 dev `.next` Windows 손상 이력 → 프로덕션 우회 검증 권장.
+- 로드맵: 메시지(case_messages)·일정 캘린더·Phase C(Supabase Auth 승격).
+
+**커밋**: (미커밋)
+
+---
+
+## 2026-06-16 22:23 — 마켓플레이스 생애주기 재설계 P1·P2 (멘토 단일화 + 로그인 통합)
+
+**무엇을**
+- **P1 멘토 단일화(#1·#2)**: `/api/mentors`(GET·POST·`[id]`)를 레거시 `mentors` → `mentor_profiles` 단일 풀로 전환. `lib/mentors.ts` 정규화(`expertise`→specialties·`headline`→소속·`approved`→active). 멘토 심사 승인분이 멘토 관리·진단 멘토지정 드롭다운에 즉시 노출. `supabase-mentors-unify.sql`(레거시 1행 보존, 선택).
+- **P2 로그인·권한 통합(#3)**: 통합 `/login`(사장 PIN·스태프/멘토 email+pw 단일 진입·역할별 라우팅). `/staff-login`·`/mentor/login`→`/login` 리다이렉트, 로그아웃·미들웨어 멘토 리다이렉트도 `/login`. `/api/auth/me` 멘토 역할 추가 + `PUBLIC_API` 공개(역할만 반환).
+
+**왜**
+- 사장 보고 4건의 근본이 멘토·멘티·인증 데이터 파편화. mentor_profiles/diagnosis 단일화로 #1·#2·#3 해소. 확정안: mentor_profiles 단일화 + 모든 신청 진단 경유.
+
+**영향 / 후속**
+- 사장 PIN·미들웨어 owner 분기 무변경 → 잠금0(프로덕션 사장 로그인 200·me=owner 확인). 멘티 mentor_id 배정 0건이라 재매핑 불필요.
+- 검증: P1 프로덕션 /api/mentors 1→7명 전환. P2 로컬 E2E(사장·스태프·멘토 역할·잠금0) + 프로덕션 사장 무손상. tsc 0.
+- ⚠️ 로컬 dev `.next` Windows 손상 반복 → 실데이터·프로덕션으로 검증 우회.
+- **후속**: P3(쇼케이스 개별신청→진단 경유→mentees 생성→멘토 수락 시 case_journey 자동생성·배정)·P4(case 메시지 스레드+파일 교환) 미착수 — 다음 집중 세션.
+
+**커밋**: `admin-tool` `fdfcad3`(P1)·`9ebd99e`(P2) / `landing` (없음)
+
+---
+
+## 2026-06-14 23:18 — RBAC 권한 3층 + 보안 강화 + 멘토 가입 동의 + 진단/리포트 개선 (프로덕션 배포)
+
+**무엇을**
+- **#6 RBAC 3층**: 사장(PIN·무변경)/운영스태프(`staff_users`·`/staff-login`·`staff_auth`)/멘토. `middleware` 역할분기(owner→전체 / staff→`lib/permissions` OWNER_ONLY 외 허용 / 미인증 차단), 네비 역할필터, `/admin/staff`·`/api/staff`(+`[id]`)·`/api/auth/{staff-login,staff-logout,me}`.
+- **보안**: 전 public 테이블 RLS on(`supabase-enable-rls.sql`) + `mentee-files` 버킷 private + STT 녹취 경로저장(public URL 제거). anon 키 코드 노출 없음(grep) 확인.
+- **멘토 가입 동의**: `/showcase/apply`에 PII 수집·이용 동의 필수(`mentor_applications.consent_*`, `supabase-mentor-consent.sql`). 동의 미전송으로 막혔던 신청 정상화. 초대링크 `/showcase/apply` 통일·`/join-mentor` 제거.
+- **진단 리포트**: AI 추천상품 STEP4 자동체크 + 선택 반영 재생성(컨텍스트 주입), 추천서비스 박스 제거(/report + 🔒메일 사장승인), /report 카카오 문의 버튼.
+- **멘토링 리포트 메일** 카드 레이아웃 재설계 + 카카오(이메일·PDF). **조직 콘솔** 협업 R/R 로그 표시·즉시반영. **랜딩** 멘토 매칭 보조 링크.
+
+**왜**
+- 멘토 확장 대비 권한 분리(나=전체 / 스태프=제한). 보안 경고(RLS off·public 버킷) 시정. 진단 리포트 추천 중첩·멘토 가입 동의 부재(법적) 해소.
+
+**영향 / 후속**
+- 🔒 FROZEN: send-email 박스만 사장승인 제거(로직 무변경). RLS는 service_role 우회로 앱 무중단(검증: mentees·diagnoses 읽힘).
+- E2E 전부 통과: 사장 전체200·잠금0(프로덕션 로그인 200 확인) / 스태프 허용200·사장전용307·API403 / 멘토 동의 제출 성공·DB저장 / 리포트 박스제거·카카오 / 조직 협업 반영. tsc 0.
+- 배포 Ready 확인: admin-tool 3건 + landing 1건 (Vercel Production).
+- 후속: 운영스태프 메뉴 경계 미세조정, `/api/mentors` 메서드별 권한, 녹취 재생 필요 시 서명 URL.
+
+**커밋**: `admin-tool` `54de08e`·`b243e0e`·`1f397a3` / `landing` `488cab1`
+
+---
+
+## 2026-06-14 — 모듈13 STT 파이프라인 구현 (2단계 완성)
+
+**무엇을**
+- `lib/mentoring/stt.ts` 신규: Google STT V1 REST + ffmpeg 5분 청크 분할. JWT 인증은 tts-generator.ts 패턴 그대로 재사용. 1시간 음성 → 12청크 × 순차 STT → 텍스트 합산.
+- `stt/route.ts` 신규: PATCH(Track A 텍스트 직접 저장) · POST(Track B 파일 업로드→Supabase Storage→STT→DB). maxDuration=300.
+- `report-generator.ts` 수정: sttText 6번째 인자 추가, `[녹취 STT 내용]` 프롬프트 주입, max_tokens STT 있으면 5000.
+- `report/route.ts` 수정: stt_text SELECT + generateMenteeReport 6번째 인자 전달.
+- `JourneyPanel.tsx` 수정: Session 인터페이스 recording_url/stt_text 추가, STT 섹션 UI(Track A textarea+저장 / Track B 파일업로드+상태), genReport 버튼 "STT 포함" 배지.
+
+**왜**
+- SOP §2.4 자동화 1순위: 녹취→STT→리포트. 1시간 파일은 Google STT 10MB 한계 초과 → ffmpeg 5분 청크로 우회.
+
+**영향 / 후속**
+- 모듈13 2단계 코드 완성. 실사용 전 Google STT API(speech.googleapis.com) GCP 활성화 확인 필요.
+- 3단계(멘토 포털 운영 도구) 미착수.
+
+**커밋**: `admin-tool` (미커밋) / `landing` (미커밋)
+
+---
+
+## 2026-06-13 22:07 — 운영 콘솔 prod 가드 + 모듈13·14 프로덕션 배포
+
+**무엇을**
+- 운영 콘솔 prod 숨김 가드: `app/admin/layout.tsx` 네비 `devOnly` 필터(prod 제외) + `app/admin/org/page.tsx` prod 시 "로컬 dev 전용" 안내(hooks 분리 래퍼 `OrgConsole`).
+- 살아난 dev 서버(3000)로 콘솔 풀스택 검증: 로그인 200 · `/api/org/overview`(8부서·5엣지·목표 3섹션) · agents 6섹션 · `/admin/org` 200.
+- 커밋 `5d3e1d0`(admin-tool, 40파일) → `git push origin HEAD:main` FF → Vercel Production 빌드 **● Ready**(3m, `admin-tool-c91ikgw46`) 확인.
+
+**왜**
+- 사장 지시 "배포해, 로컬 전용은 숨겨두고". 콘솔은 dev 전용(로컬 파일 fs)이라 prod 숨김, 모듈13(딜리버리)은 내부 어드민으로 라이브.
+
+**영향 / 후속**
+- 배포 범위: 모듈13(멘토링 딜리버리·리포트) + 모듈14(콘솔, prod 숨김) + casefile 수정(`a33ec1c`). 전부 admin 인증 뒤·고객 노출 0·🔒 FROZEN 무수정. PII·대용량 미포함(점검).
+- 콘솔 prod 3중 차단: 네비 숨김 + 페이지 안내 + API 403. 데이터는 로컬 `org/*.md`에만.
+- 루트 거버넌스 파일(org/·ARCHITECTURE·WORKLOG·랜딩)은 미커밋(배포 비대상, 루트 대용량/PII 혼재로 선별 커밋 필요).
+- 후속: 모듈11 `lib/pdf.ts` 복구(L-0002, 별개) · 콘솔 Phase 2(Supabase 이전 시 prod 가동).
+
+**커밋**: `admin-tool` `5d3e1d0` (→main 배포·Ready) / `landing` (미커밋)
+
+---
+
+## 2026-06-13 21:45 — 회사 운영 콕핏(org 콘솔) 구축 — 모듈14 GUI 레이어
+
+**무엇을**
+- 데이터 계층 `admin-tool/lib/org/` 7파일: `registry`(부서 8+고위험키워드)·`markdown`(섹션/표 파서)·`ledger`(append-only r/w)·`agents`(frontmatter 보존)·`objectives`·`state`(읽기)·`orgchart`(CHARTER §6 페어링·R/R append).
+- API `admin-tool/app/api/org/` 7라우트(전부 prod 403 가드): `overview`·`agents/[name]`(GET·PATCH)·`ledger`(GET·POST)·`ledger/[id]`(PATCH)·`objectives`(GET·PUT)·`state/[dept]`·`orgchart`(GET·PATCH).
+- UI `admin-tool/app/admin/org/page.tsx`: 3탭(조직 맵=계층0~3 노드·검수엣지 / 오더 보드=상태 칸반·드래그·새 오더 / 목표) + 부서 드로어(설정=직무·⚙️판단로직 / 오더 / 현황 / 협업). 어드민 NAV에 `조직 운영` 추가.
+- 검증 스크립트 `scripts/verify-org.mts` — 실제 org/ 파일 read/write 라운드트립.
+
+**왜**
+- 사장 요청: 조직 관계·각 부서 오더와 답·부서간 커뮤니케이션→결과를 보기 좋게 보고, 거기서 오더·직무범위·판단로직·협업을 직접 조정하는 '회사 운영 장치'. 데이터는 이미 org/*.md에 구조화돼 있어 GUI 한 겹만 추가.
+- 확정: 분리형(설정=대시보드/실행=Claude Code) + 로컬 dev 우선(파일=SoT, Supabase 불필요).
+
+**영향 / 후속**
+- 🔒 FROZEN·admin-tool 코드·Supabase 미접촉. 쓰기는 org/+경영 8 에이전트만. LEDGER append-only, 고위험(CHARTER §4) 오더 자동 승인대기.
+- 검증: `verify-org.mts` 통과 — LEDGER 5건 파싱·append L-0006(5→6)·patch 반려·타행보존·원복, 에이전트 no-op 라운드트립 **바이트 동일(무손실)**, 고위험 게이트(가격/배포=true, 검수=false), CHARTER §6 6엣지. tsc 0.
+- ⚠️ 브라우저 E2E 보류: 3000 dev 서버를 타 세션(L-0002 lib/pdf.ts)이 점유·500 상태 → 데이터 계층은 스크립트로 검증. 서버 가용 시 `/admin/org` 스모크·prod 403 확인 권장.
+- 후속(Phase 2 배포): org 데이터 Supabase 이전 + `/org-sync` 브리지.
+
+**커밋**: `admin-tool` (미커밋) / `landing` (미커밋)
+
+---
+
+## 2026-06-13 16:56 — 리포트 버그픽스 + 표현 개선 (S2 JSON 잘림·가운뎃점·로드맵 레이블)
+
+**무엇을**
+- `report-generator.ts`: `repairTruncatedJson` 추가. `parseJson` 개선(repair 폴백 + `·`→`, ` 후처리). S2 max_tokens 4000→6000.
+- `report-pdf.tsx` + `report-generator.ts`: 로드맵 레이블 변경 — S2=경험 구체화, S3=심화과정, S4=심화과정(추가).
+
+**왜**
+- S2 리포트가 경험×그룹 전체 커버로 출력이 길어지면서 max_tokens 4000에서 JSON 잘림 → 502 발생. experience-suggest.ts의 동일 해결 패턴 적용.
+- 가운뎃점(·) 연결 표현이 리포트 가독성 저하 — 쉼표+공백으로 통일.
+- 로드맵 표시명이 내부 구현 용어("경험 디깅", "기본형 문서")라 멘티 전달 관점에 안 맞음.
+
+**영향 / 후속**
+- S2 리포트 정상 생성 확인(사용자 검증). tsc 에러 0.
+- ARCHITECTURE.md·PLAN.md 레이블 동기화 완료.
+
+**커밋**: `admin-tool` (미커밋)
+
+---
+
+## 2026-06-13 — AI 운영체계(모듈14) 구축 + SQL 마이그레이션 완료 + 퍼널 측정 체계 수립
+
+**무엇을**
+- 모듈14 AI 자율 협업 운영체계 구축: `org/`(PROTOCOL·IMPACT_MAP·CHARTER·OBJECTIVES·LEDGER·ORG_CHART·state 6종) + 에이전트 8개(커리어랩장·분신·6본부장) + 슬래시커맨드 4개(`/order`·`/standup`·`/strategy-review`·`/org-audit`)
+- L-0001 SQL 마이그레이션 검증 완료: case_journeys·case_sessions·lead_analytics·bitly_clicks·trend_benchmarks·content_priority 생성 (PostgREST 200 확인)
+- lead_analytics 트리거 LIVE: `EXCEPTION WHEN OTHERS THEN NULL` 하드닝 적용 — 진단 접수(FROZEN diagnoses) 롤백 불가 보장. 트랜잭션 테스트 통과.
+- 랜딩페이지 v2 수정: `mode: 'no-cors'` 제거, `concern` 필드명 수정(`주요고민`→`concern`), URL 파라미터 추적 추가(`?ref=youtube_shorts` 등 → referral 자동 주입), 서버 에러 감지 가능
+- Bitly API 토큰 등록 완료, 대시보드 동기화 버튼 정상화
+
+**왜**
+- 1인 운영 → AI 에이전트 자율 협업 체계로 전환(오더 인테이크·부처별 현황·객관성 검증). 매출·품질 목표(OBJECTIVES.md) 기준 전 본부 유동 재정렬.
+- SQL 미실행으로 모듈13 회차 API 500, 마케팅 퍼널 측정 불가 상태였음 → 해소.
+- 랜딩페이지 `no-cors`로 서버 에러 감지 불가 + concern 필드 누락 → 데이터 정합성 복구.
+
+**영향 / 후속**
+- 신규 진단 신청부터 lead_analytics 자동 수집 시작(2급 지표 확보)
+- 대시보드 `채널별 유입` 실데이터 쌓히기 시작
+- 후속: L-0002(lib/pdf.ts 복구, 타 세션 진행 중), L-0003(퍼널 측정 운영), Bitly 링크에 `?ref=youtube_shorts` 파라미터 추가 필요(영석님 직접)
+
+**커밋**: `admin-tool` (미커밋) / `landing` `a5d8a0f` (루트, 마지막 sync)
+
+---
+
 ## 2026-06-13 — S1/S2 리포트 구조 재설계 + RESEND 도메인 반영
 
 **무엇을**

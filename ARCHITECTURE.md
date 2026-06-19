@@ -4,7 +4,7 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-13 (**S1/S2 리포트 구조 재설계** — `S1GroupCard`·`S2ExperienceMapping`·`RoadmapInfo` 신규 인터페이스. S1=그룹별 접근전략 카드, S2=경험×그룹 포지셔닝 매트릭스, 전 회차=5단계 로드맵 인디케이터. S2 리포트 생성 시 S1 ai_suggestion 자동참조. `RESEND_FROM_EMAIL=noreply@rocketcareer.co.kr` 반영. tsc 에러 0) ←→ 2026-06-11 (**모듈 13 멘토링 운영(딜리버리) 시스템 등재** — 두 운영 문서(SOP v1.1·운영스크립트 v1.0, `admin-tool/mentoring tool/files/`) 평가 → 어드민의 "네 번째 축"인 멘토링 실행(딜리버리)이 비어있음 확인(녹취→STT→리포트 **코드 0건**, `lib/pdf.ts` generatePdf **throw 비활성**). 모듈 13 신규 등재(📋 PLANNED). **상품모델 결정**: `makeup`="회사선택→이력서 Make-up"(200,000원)=SOP 5세션(S0 OT~S4). **FROZEN 우회**: 회차·리포트는 신규 테이블(case_journeys/case_sessions/session_reports/case_artifacts) 분리, 모듈1(mentees/contracts/session_notes) 무수정·FK 읽기만. 계약 문서: 루트 `PLAN.md`) ←→ 2026-06-07 (**모듈 12 마켓플레이스 프로덕션 배포** — admin-tool `feature/marketplace-phase1` → main FF 머지·푸시(`0abd512`)로 Vercel 자동배포 + 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료(11테이블·멘토 로그인 컬럼·시드). 모듈 12 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL 미실행'·'머지/배포 결정' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브'로 정합. ⚠️ main 직접 푸시가 auto모드 가드레일에 막혀 사용자가 `Bash(git push:*)` 권한 부여 후 단독 푸시로 진행) ←→ 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
+마지막 업데이트: 2026-06-18 (**멘티 포털(멘티 화면) 신규 구축 — S0~S4 풀 딜리버리, Phase A~C 코드완료·tsc 0** — 멘토 화면(JourneyPanel)의 멘티 카운터파트 신설. 멘티가 **이메일 매직링크(passwordless·`mentee_auth`, mentees 스키마 무수정·stateless)**로 로그인해 **회차별 자료를 구조화 제출**(`mentee_submission` JSONB → `assignment_input` 직렬화 → 멘토 JourneyPanel·AI 그룹화/합리화 제안 **무수정 동작**)하고 **리포트를 열람**(sent만). 신규 `app/mentee/*`(login·dashboard·forms)·`app/api/mentee/*`(login/verify/logout/me·sessions/[sid] 제출·files·report+pdf)·`lib/mentee-portal.ts`(인증·소유권·노출 화이트리스트·직렬화)·`lib/auth.ts` 멘티 헬퍼·`middleware.ts` 멘티 게이트. 멘토측 글루: `JourneyPanel.tsx` "멘티 초대"(매직링크) + S1/S2 "멘티 제출됨" 배지 + `journey/invite`. 입력 명세 = SOP §3·운영스크립트 회차. 🔒 FROZEN(mentees/diagnoses/contracts) 읽기조인만 + 전 라우트 소유권 검증(token menteeId===journey.mentee_id) + `safeSession` 노출통제(judgment_note·ai_suggestion·stt_text 비노출). SQL `supabase-mentee-portal.sql`(case_sessions.mentee_submission/submitted_at·files.session_id, **미적용**). 후속(사장 승인): SQL 적용·라이브 스모크·메일발송) ←→ 2026-06-16 (**마켓플레이스 생애주기 재설계 P1·P2 (프로덕션 배포·검증)** — 멘토–멘티 데이터 파편화(멘토 `mentors`↔`mentor_profiles`, 멘티 `mentees`↔`mentee_applications`, 인증 3분할) 통합 시작. **P1 멘토 단일화(#1·#2)**: `/api/mentors`(GET·POST·[id])를 `mentor_profiles` 단일 풀로 전환 + `lib/mentors.ts` 정규화(expertise→specialties·headline→소속·approved→active). 멘토 심사 승인분이 멘토 관리·진단 멘토지정 드롭다운에 즉시 노출. 멘티 배정 0건이라 mentor_id 재매핑 불필요. 프로덕션 검증: /api/mentors 1→7명 전환. **P2 로그인·권한 통합(#3)**: 통합 `/login`(사장 PIN·스태프/멘토 email+pw 단일 진입·역할 라우팅), `/staff-login`·`/mentor/login`→`/login` 리다이렉트, `/api/auth/me` 멘토 역할 추가+공개. 사장 PIN·미들웨어 owner 분기 무변경→잠금0(프로덕션 사장 로그인 200 확인). 로컬 E2E: 사장 me=owner·스태프 허용/사장전용307·멘토 me=mentor·포털200·/admin307. **후속**: P3(멘티 진단 단일 퍼널·case 자동생성)·P4(소통·파일) 미착수. ⚠️ 로컬 dev `.next` Windows 손상 반복 → 검증은 실데이터·프로덕션 우회. 커밋: admin-tool `fdfcad3`(P1)·`9ebd99e`(P2)) ←→ 2026-06-14 (**RBAC 권한 3층 + 보안 강화 + 멘토 가입 동의 + 진단/리포트 개선 (프로덕션 배포·검증)** — ① **#6 RBAC**: 사장(PIN, 무변경)/운영스태프(`staff_users`·`/staff-login`·`staff_auth`)/멘토 3층. `middleware`가 사장전용(조직운영·멘토관리·멘토심사·스태프관리)만 스태프 차단(denylist `lib/permissions.ts`), 네비 역할필터. `/admin/staff`(사장)·`/api/staff`. E2E: 사장 전체200·스태프 허용200/사장전용307·API403. 프로덕션 사장 로그인 무손상 확인. ② **보안**: 전 public 테이블 RLS on(service_role 우회·무중단)+`mentee-files` 버킷 private+STT 녹취 경로저장(public URL 제거). ③ **멘토 가입**: `/showcase/apply`에 PII 수집·이용 동의 필수(`mentor_applications.consent_*`)—동의 미전송으로 막혔던 신청 정상화. 초대링크 `/showcase/apply` 통일. ④ **진단 리포트**: AI 추천상품 STEP4 자동체크·선택 반영 재생성, 추천서비스 박스 제거(본문 솔루션 중첩·🔒메일 사장승인 수정), 카카오 문의 버튼(/report 페이지). ⑤ **멘토링 리포트 메일** 카드 레이아웃 재설계+카카오(이메일·PDF). ⑥ **조직 콘솔** 협업 R/R 로그 표시·즉시반영 수정. ⑦ **랜딩** 멘토 매칭 보조 링크. 커밋: admin-tool `54de08e`·`b243e0e`·`1f397a3` / landing `488cab1`) ←→ 2026-06-14 (**모듈13 STT 파이프라인 구현** — Google STT + ffmpeg 5분 청크 분할, 2트랙(A=텍스트 직접입력·B=파일 업로드 자동변환). `lib/mentoring/stt.ts`(JWT 인증·청크 순차 STT 신규)·`stt/route.ts`(PATCH Track A · POST Track B · maxDuration=300 신규)·`report-generator.ts`(sttText 6번째 인자·프롬프트 상단 주입·max_tokens 5000)·`report/route.ts`(stt_text 조회·전달)·`JourneyPanel.tsx`(STT 섹션 UI · Session 인터페이스 recording_url/stt_text 추가). tsc 에러 0. 커밋: 미커밋) ←→ 2026-06-13 (**모듈13·14 프로덕션 배포** — admin-tool `5d3e1d0` → main FF 푸시로 Vercel Production 빌드 ● Ready(3m). 배포: 모듈13(멘토링 딜리버리·리포트, 내부 어드민) + 모듈14 콘솔(prod 숨김 — 네비 `devOnly` 필터·페이지 dev 전용 안내·API 403) + casefile 수정(`a33ec1c`). 전부 admin 인증 뒤·고객 노출 0·🔒 FROZEN 무수정. 콘솔 풀스택 검증(로그인 200·overview 8부서·agents 6섹션·page 200) 통과) ←→ 2026-06-13 (**운영 콘솔(회사 운영 콕핏) 구축** — 모듈14 org/ 파일을 GUI로 보고 편집하는 dev 전용 대시보드. `admin-tool/lib/org/`(파서 7) + `app/api/org/`(라우트 7, prod 403 가드) + `app/admin/org/`(조직 맵·오더 보드·목표 + 부서 드로어). 파일=단일 진실원천(Node fs로 org/·.claude/agents 직접 r/w), 분리형(설정=콘솔/실행=/standup). LEDGER append-only·고위험 자동 승인대기. `scripts/verify-org.mts` 실파일 라운드트립 검증(에이전트 무손실·append-only 보존·고위험 게이트), tsc 0) ←→ 2026-06-13 (**리포트 버그픽스·표현 개선** — `repairTruncatedJson`+max_tokens 6000으로 S2 JSON 잘림 502 해소. `parseJson`에 가운뎃점(·)→쉼표+공백 후처리. 로드맵 레이블 변경: S2=경험 구체화/S3=심화과정/S4=심화과정(추가). `report-pdf.tsx`·`report-generator.ts` 동기화) ←→ 2026-06-13 (**AI 운영체계(모듈14) 구축 + SQL 마이그레이션(L-0001) 완료 + 퍼널 측정 체계 + 랜딩페이지 수정** — org/ 파일 7종·에이전트 8개·커맨드 4개 신설. case_journeys·case_sessions·lead_analytics·bitly_clicks·trend_benchmarks·content_priority DB 실행 완료. lead_analytics 트리거 LIVE(EXCEPTION WHEN OTHERS 하드닝, diagnoses FROZEN 무손상). 랜딩페이지 v2: no-cors 제거·concern 필드 수정·URL 파라미터 추적 추가(bit.ly/rcl-shorts → ?ref=youtube_shorts → source_channel 자동 매핑). Bitly 토큰 등록 완료. LEDGER L-0001 검증) ←→ 2026-06-13 (**S1/S2 리포트 구조 재설계** — `S1GroupCard`·`S2ExperienceMapping`·`RoadmapInfo` 신규 인터페이스. S1=그룹별 접근전략 카드, S2=경험×그룹 포지셔닝 매트릭스, 전 회차=5단계 로드맵 인디케이터. S2 리포트 생성 시 S1 ai_suggestion 자동참조. `RESEND_FROM_EMAIL=noreply@rocketcareer.co.kr` 반영. tsc 에러 0) ←→ 2026-06-11 (**모듈 13 멘토링 운영(딜리버리) 시스템 등재** — 두 운영 문서(SOP v1.1·운영스크립트 v1.0, `admin-tool/mentoring tool/files/`) 평가 → 어드민의 "네 번째 축"인 멘토링 실행(딜리버리)이 비어있음 확인(녹취→STT→리포트 **코드 0건**, `lib/pdf.ts` generatePdf **throw 비활성**). 모듈 13 신규 등재(📋 PLANNED). **상품모델 결정**: `makeup`="회사선택→이력서 Make-up"(200,000원)=SOP 5세션(S0 OT~S4). **FROZEN 우회**: 회차·리포트는 신규 테이블(case_journeys/case_sessions/session_reports/case_artifacts) 분리, 모듈1(mentees/contracts/session_notes) 무수정·FK 읽기만. 계약 문서: 루트 `PLAN.md`) ←→ 2026-06-07 (**모듈 12 마켓플레이스 프로덕션 배포** — admin-tool `feature/marketplace-phase1` → main FF 머지·푸시(`0abd512`)로 Vercel 자동배포 + 신규 SQL 4종(setup→apply→auth→seed) Supabase 실행 완료(11테이블·멘토 로그인 컬럼·시드). 모듈 12 🚧 BUILT·미배포 → ✅ ACTIVE. 미결 'SQL 미실행'·'머지/배포 결정' 해소. IMC v2 §1 'Track B 미운영' → 'Phase 1 라이브'로 정합. ⚠️ main 직접 푸시가 auto모드 가드레일에 막혀 사용자가 `Bash(git push:*)` 권한 부여 후 단독 푸시로 진행) ←→ 2026-06-05 (**모듈 12 멘토링 마켓플레이스 등재 — 거버넌스 표류 시정** — `feature/marketplace-phase1`에만 있어 그간 미등재였던 양면 마켓플레이스(공개 쇼케이스+멘토 온보딩+멘토 포털+거래, 신규 테이블 11개)를 모듈 12로 인벤토리·상세·미결SQL에 등재. ⚠️ IMC v2 'Track B 미운영'·모듈 10 '멘토포털 미시작'과 상태 모순 표기. 미배포(main 미머지)·SQL 4종 미실행. 미머지 브랜치를 `/sync-arch`가 못 보던 맹점 노출) ←→ 2026-06-03 (**마케팅 전략 레이어(IMC) 거버넌스 등재** — `marketing_division/로켓커리어연구소_IMC_마케팅기획안_v2.md`를 전략 SoT로 "📣 마케팅 전략 레이어" 섹션 신설(전략결정→코드 매핑·정합 규칙), `/sync-arch`에 마케팅 정합 절차·출력 라인 추가) ←→ 2026-05-31 (모듈 8 인코딩 파이프라인 로직 박제: 표 추출 추가·max_tokens 16000·실패유형 매핑·왜인코딩하는지 3개 다운스트림 명문화. cases_career 29건/rules 173건/임베딩 29건 갱신) ←→ 2026-05-30 (CaseFile 영상 **완전 로컬 렌더 전환** — `scripts/make-case.mts`+`npm run make:case` / QA 게이트(`failOnQA`) / 폰트 weight 제한 최적화 / 어드민 웹 영상 UI 제거(쇼츠 버튼·롱폼 컬럼·케이스파일 웹 버튼) / **로컬 웹 패널 `/admin/local-studio` 신설**(dev 전용 — 케이스선택→대본생성→편집→로컬렌더→미리보기). **로컬 스튜디오 제작 이력 영속화**(renders API+배지+미리보기 복원) / **CTA 톤 개편**(첨삭 직접언급→커리어 진단/점검 3톤 변주·짧게) / **로컬 스튜디오 나레이션 우선 분리 플로우**(나레이션→자막→음성→렌더, QA 권고 대본 반영, caseId 기준 충돌 차단, 미리보기 버그·dev 안정화 수정) / **유튜브 업로드 키트**(렌더 후 ⑦ — 제목3·설명·랜딩 후킹 고정댓글))
 
 ---
 
@@ -24,8 +24,8 @@
 | 10 | Phase C (Auth/포털) | 📋 PLANNED | — | `admin-tool/app/mentor/`, `admin-tool/app/mentee/` |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
 | 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07) | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
-| 13 | 멘토링 운영 (딜리버리) | 🚧 2단계 BUILT (멘티 리포트 완료) | — (미지정) | `admin-tool/app/admin/mentees/[id]/JourneyPanel.tsx`, `app/api/mentees/[id]/journey/`, `lib/mentoring/`, `supabase-mentoring-ops-setup.sql` |
-| 14 | AI 운영체계 (자율 협업) | ✅ ACTIVE (2026-06-13) | chief-of-staff·career-lab-lead·6본부장 | `org/`(PROTOCOL·IMPACT_MAP·CHARTER·OBJECTIVES·LEDGER·ORG_CHART·state), `.claude/agents/*-head.md`, `.claude/commands/{order,standup,strategy-review,org-audit}.md` |
+| 13 | 멘토링 운영 (딜리버리) | ✅ 2단계 배포 (2026-06-13, `5d3e1d0`) — 리포트 react-pdf | — (미지정) | `admin-tool/app/admin/mentees/[id]/JourneyPanel.tsx`, `app/api/mentees/[id]/journey/`, `lib/mentoring/`, `supabase-mentoring-ops-setup.sql` |
+| 14 | AI 운영체계 (자율 협업) + 운영 콘솔 | ✅ ACTIVE (2026-06-13) | chief-of-staff·career-lab-lead·6본부장 | `org/`(PROTOCOL·IMPACT_MAP·CHARTER·OBJECTIVES·LEDGER·ORG_CHART·state), `.claude/agents/*-head.md`, `.claude/commands/{order,standup,strategy-review,org-audit}.md`, **콘솔(dev)** `admin-tool/app/admin/org/`·`app/api/org/`·`lib/org/` |
 
 ---
 
@@ -130,7 +130,7 @@ content_queue    — 스크립트 큐
                review_notes, revision_count, history(JSONB)
                status(pending/approved/skipped), skip_reason, created_at
 
-lead_analytics   — 유입 분석 (⚠️ Supabase 트리거 미실행)
+lead_analytics   — 유입 분석 (✅ 트리거 LIVE 2026-06-13 — EXCEPTION WHEN OTHERS 하드닝)
 bitly_clicks     — Bitly 클릭 수집
 ```
 
@@ -677,7 +677,7 @@ activity_feed        — 쇼케이스 실시간 활동 피드 소스
 
 ---
 
-### 🚧 모듈 13 — 멘토링 운영(딜리버리) — 1단계 BUILT (SQL 실행 대기, 2026-06-11)
+### 🚧 모듈 13 — 멘토링 운영(딜리버리) — 2단계 BUILT (SQL 실행 완료 2026-06-13, lib/pdf.ts 복구 후 3단계)
 
 > **상태:** ✅ 1단계 + S1 AI 보조 동작(회차 S0~S4 운영 + 그룹화 AI 제안). SQL 적용·E2E 검증 완료(여정 생성·회차 PATCH·이용기간 OT+3개월·Claude 그룹화·DB 저장). 피드백 반영: ① `makeup` 계약 있을 때만 노출 · ③ 회차 순차 잠금. 2~3단계·타 회차 AI 미착수. **계약 문서: 루트 `PLAN.md`**.
 > **SoT:** `admin-tool/mentoring tool/files/멘토링_운영표준_SOP_v1.md`(SOP v1.1) · `멘토_운영스크립트_v1.md`(v1.0)
@@ -687,7 +687,7 @@ activity_feed        — 쇼케이스 실시간 활동 피드 소스
 어드민의 "네 번째 축" — ①진단(FROZEN)·②마케팅·③마켓플레이스에 이은 **딜리버리 축**.
 
 **상품 매핑 (확정 2026-06-11):** SOP "단일 OT+4회차=5세션" = `makeup`("회사선택→이력서 Make-up", 200,000원).
-S0=OT(진단) / S1=타깃 그룹화 / S2=경험 디깅 / S3=기본형 문서 / S4=파생·종료. 나머지 5종은 단발 서비스(회차 비대상).
+S0=OT(진단) / S1=타깃 그룹화 / S2=경험 구체화 / S3=심화과정 / S4=심화과정(추가). 나머지 5종은 단발 서비스(회차 비대상).
 
 **신규 테이블 (🔒 모듈1 FROZEN 무수정 — mentees/contracts는 FK 읽기조인만):**
 ```
@@ -722,7 +722,19 @@ case_artifacts   — 작업 산출물 (target_groups·appeal_tags·representativ
 - **전 회차** = `RoadmapInfo`(step 1~5 — 코드가 삽입, AI 비생성). PDF·UI 모두 5단계 인디케이터 렌더.
 - `report-pdf.tsx`에 `Roadmap`·`GroupCards`·`ExperienceMatrix` 컴포넌트 추가. `JourneyPanel.tsx` UI 미리보기 동기화. tsc 에러 0.
 
+**🔧 리포트 버그픽스·표현 개선 (2026-06-13):** ① S2 JSON 잘림 해소 — `repairTruncatedJson` 추가 + max_tokens 4000→6000(S2). ② `parseJson`에서 가운뎃점(·) → 쉼표+공백(, ) 전환 후처리. ③ 로드맵 레이블: S2=경험 구체화 / S3=심화과정 / S4=심화과정(추가) (`report-pdf.tsx`·`report-generator.ts` 양쪽 동기화).
+
+**🎙 STT 파이프라인 구현 (2026-06-14):** 녹취→STT→리포트 자동화 완성. `lib/mentoring/stt.ts`(Google STT V1 REST + ffmpeg 5분 청크 분할·JWT 인증 tts-generator.ts 동일 패턴 재사용) · `app/api/mentees/[id]/journey/sessions/[sid]/stt/route.ts`(PATCH=Track A 텍스트 직접 저장 · POST=Track B 파일 업로드→Supabase Storage→STT→DB · maxDuration=300) · `report-generator.ts`(sttText 6번째 인자, 프롬프트 상단 `[녹취 STT 내용]` 주입, max_tokens sttText 있으면 5000) · `report/route.ts`(stt_text SELECT·전달) · `JourneyPanel.tsx`(Session 인터페이스 recording_url/stt_text 추가, STT 섹션 UI Track A+B, genReport 버튼 "STT 포함" 배지). Google STT: `encoding:MP3·sampleRateHertz:16000·languageCode:ko-KR·model:latest_long·enableAutomaticPunctuation:true`. 인증 환경변수 재사용(GOOGLE_SERVICE_ACCOUNT_EMAIL/GOOGLE_PRIVATE_KEY). tsc 에러 0.
+
 **재사용 자산:** `app/admin/mentees/[id]/page.tsx`(계약·메모·파일 그릇), `STAGE_TEMPLATES`(`app/api/mentees/[id]/contracts/route.ts` — makeup 단발 stages를 회차로 대체), `app/mentor/`(모듈12 포털, 3단계 스크립트 임베드).
+
+**🆕 멘티 포털 (멘티 화면 — Phase A~C, 2026-06-18, 코드완료·tsc 0·SQL 미적용):** 멘티가 직접 로그인해 회차별 자료를 제출·리포트를 열람하는 **멘토 화면(JourneyPanel)의 멘티 카운터파트**.
+- **인증(매직링크·passwordless):** `lib/auth.ts` `createMenteeToken/verifyMenteeToken`(`mentee_auth` 7일) + `createMenteeLink/verifyMenteeLink`(매직링크 7일, `mlink:` 네임스페이스 → 세션 오용 차단). mentees 스키마 무수정(stateless). `middleware.ts` 멘티 게이트·`PUBLIC_API`(login/verify/logout)·matcher `/mentee/:path*`.
+- **라우트:** `app/api/mentee/{login,verify,logout,me}` + `sessions/[sid]`(PATCH 제출)·`sessions/[sid]/files`(업로드/서명URL)·`sessions/[sid]/report(+pdf)`(sent만, `renderReportPdf` 재사용). 공용 `lib/mentee-portal.ts`(`menteeIdFrom`·`safeSession` 노출 화이트리스트·`ownedSession` 소유권·`serializeSubmission`).
+- **UI:** `app/mentee/{login,page}.tsx` + `forms.tsx`(S0 진단체크리스트·S1 회사선택 Roadmap·S2 경험시트(신입/경력)·S3·S4 업로드·파일 업로더·리포트 뷰·개인 TO-DO). 입력 항목 = SOP §3·운영스크립트 회차 명세.
+- **데이터 흐름:** 멘티 제출 → `case_sessions.mentee_submission`(JSONB, 신규) + `assignment_input`(직렬화 텍스트, 기존 — group/experience-suggest 포맷 일치) + `assignment_done` + `submitted_at`. 멘토 `JourneyPanel`이 "멘티 초대" 버튼·"멘티 제출됨" 배지로 자동 표시, `aiInput`이 `assignment_input` prefill → 기존 AI 그룹화/합리화 **무수정**. 첨부 = `files`(신규 `session_id`)·`mentee-files`(private) 버킷.
+- **보안:** 전 라우트 소유권 검증(token menteeId === journey.mentee_id), `safeSession`이 judgment_note·ai_suggestion·stt_text·recording_url 비노출·mentee_report는 sent만. 🔒 FROZEN 읽기조인만.
+- **SQL:** `supabase-mentee-portal.sql`(case_sessions.mentee_submission/submitted_at·files.session_id). ⚠️ 미적용 시 제출 500. **후속(사장 승인):** SQL 적용·라이브 스모크·매직링크 메일 발송.
 
 ---
 
@@ -746,6 +758,17 @@ state/*.md     — 6본부 상태파일 (현황·목표정합·블로커·미반
 
 **커맨드:** `/order`(인테이크) · `/standup`(일일·분신) · `/strategy-review`(주간·커리어랩장) · `/org-audit`(객관성 검증).
 
+**운영 콘솔 (회사 운영 콕핏 — dev 전용, 2026-06-13):** 위 org/ 파일을 GUI로 보고 편집하는 한 겹.
+```
+admin-tool/lib/org/*.ts        — 파서/직렬화 (registry·markdown·ledger·agents·objectives·state·orgchart)
+admin-tool/app/api/org/*       — overview·agents/[name]·ledger(+[id])·objectives·state/[dept]·orgchart (전부 prod 403 가드)
+admin-tool/app/admin/org/      — 3탭(조직 맵·오더 보드·목표) + 부서 드로어(설정·오더·현황·협업)
+```
+- **파일=단일 진실원천**: Node fs로 `org/*.md`·`.claude/agents/*-head.md` 직접 read/write. 대시보드 편집 = Claude Code가 읽는 그 파일. **분리형**(설정=콘솔 / 실행=`/standup`·`/order`).
+- **안전**: 쓰기는 org/+경영 8 에이전트만. LEDGER append-only(POST 추가·PATCH 상태/근거 셀만). 고위험 키워드(CHARTER §4) 오더 자동 `승인대기`. admin-tool 코드·FROZEN·Supabase 미접촉.
+- **검증(2026-06-13)**: `scripts/verify-org.mts` — 실제 파일 read/write 라운드트립(에이전트 무손실 바이트 동일·append-only 보존·고위험 게이트). tsc 0.
+- Phase 2(배포): org 데이터 Supabase 이전 + `/org-sync` 브리지 (추후).
+
 > ⚠️ **정합:** `IMPACT_MAP.md`는 이 ARCHITECTURE.md(의존성 맵·변경 임팩트 체크표·📣 마케팅 레이어)의 결정화다. ARCHITECTURE가 바뀌면 `IMPACT_MAP.md`도 동기화한다(`/sync-arch` 점검 대상). 운영체계는 FROZEN(모듈1)을 읽기조차 하지 않는다.
 
 ---
@@ -763,7 +786,7 @@ state/*.md     — 6본부 상태파일 (현황·목표정합·블로커·미반
       │
       ▼
 [어드민 UI] ──► /admin/content/review
-[대시보드]  ──► lead_analytics (⚠️ 트리거 미실행)
+[대시보드]  ──► lead_analytics (✅ 트리거 LIVE 2026-06-13)
 
 [랜딩페이지] ──► /api/submit-diagnosis
                        │
@@ -801,6 +824,8 @@ app/api/auth/login   ← PIN 검증 후 서명 토큰을 httpOnly 쿠키(admin_a
 ```
 
 **쿠키 정책:** 값은 `만료시각.HMAC서명` 토큰(PIN 평문 저장 안 함), `secure`는 프로덕션만, `sameSite=lax`
+
+> 🆕 **멘티 인증 (2026-06-18):** `mentee_auth` 쿠키(HMAC, 7일) — 비밀번호 없이 **이메일 매직링크**로 발급(`createMenteeLink` 7일·`mlink:` 네임스페이스 → `/api/mentee/verify`에서 세션 토큰으로 교환). mentees 스키마 무수정(stateless). 멘티 라우트는 미들웨어 게이트 + 앱 레이어 소유권 검증(token menteeId === journey.mentee_id) 이중 방어. 공개: `/api/mentee/{login,verify,logout}`.
 
 > ⚠️ 새 공개 API(인증 불필요)를 추가하면 `middleware.ts`의 `PUBLIC_API` 배열에 경로를 등록해야 함
 > 📋 Phase C에서 이 메커니즘을 Supabase Auth(JWT)로 교체 예정 — [모듈 10] 참조
@@ -882,5 +907,5 @@ GOOGLE_PRIVATE_KEY               ← cloud-platform scope로 TTS 호출
 | ✅ 완료 | 마켓플레이스 main 머지·배포 | 마켓플레이스(12) | 2026-06-07 `feature/marketplace-phase1`→main FF 머지·푸시(`0abd512`)·Vercel 배포. PUBLIC_API(showcase·mentor) 등록 확인됨 |
 | 🟡 중간 | 멘토 인증 이원화(자체 password_hash ↔ 모듈10 Supabase Auth) 통합 방향 | 마켓플레이스·Phase C | IMC v2 §1 'Track B' 정합은 완료(2026-06-07). 모듈 10·12 인증 통합 방향만 미정 |
 | 🔴 높음 | **모듈13 1단계 SQL 실행**: `supabase-mentoring-ops-setup.sql` Supabase 적용 (코드 완료·tsc 통과, 미실행 시 회차 API 500) | 멘토링 운영(13) | case_journeys·case_sessions. makeup 계약 연결. FROZEN 무수정 |
-| 🟡 중간 | **모듈13 2단계 잔여**: 녹취→STT→8섹션 리포트(SOP §5 표준형) — SOP 자동화 1순위. 멘티 전달 리포트(report-generator+PDF+Resend+S1/S2 구조) ✅ 완료(2026-06-13) | 멘토링 운영(13) | 녹취 업로드→STT(클로바/Whisper) 구현 필요 |
+| ✅ 완료 | **모듈13 2단계 완료 (2026-06-14)**: STT 파이프라인(Google STT + ffmpeg 5분 청크·2트랙) + sttText→리포트 자동 반영 + JourneyPanel STT UI | 멘토링 운영(13) | stt_text 있으면 리포트 AI 프롬프트에 자동 주입. 3단계(멘토 포털) 미착수 |
 | 🟢 낮음 | **모듈13 3단계**: 멘토 스크립트·체크리스트·메시지카드9 + 예외처리 상태머신 | 멘토링 운영(13) | 모듈12 멘토 포털 연동 |

@@ -19,7 +19,7 @@
 
 ### 2. 확정 결정 (2026-06-11, 대표)
 1. **상품모델**: SOP의 "단일 OT+4회차=5세션" = 현재 `makeup` 상품(**"회사선택→이력서 Make-up"**, 200,000원).
-   - 매핑: S0=OT(진단) / S1=타깃 그룹화(회사선택 Roadmap) / S2=경험 디깅 / S3=기본형 문서(경력기술서·자소서) / S4=파생·종료.
+   - 매핑: S0=OT(진단) / S1=타깃 그룹화(회사선택 Roadmap) / S2=경험 구체화 / S3=심화과정(기본형 문서·경력기술서·자소서) / S4=심화과정(추가)·종료.
    - 회차 운영은 **makeup 계약에만** 연결. 나머지 5종(`resume`·`coverletter`·`package`·`interview`·`salary`)은 단발 가치-업 서비스로 유지(회차 비대상).
    - 가격·패키지 재편 없음(매핑만 기록).
 2. **FROZEN 우회**: 회차·리포트 데이터는 **신규 테이블로 분리**.
@@ -72,3 +72,4 @@
 - (2026-06-13) 모듈 13 **2단계 — 멘티 전달 리포트**(사용자 요청): `report-generator`(AI 가공: 핵심·직무맥락·임팩트·세부·다음액션, SOP §5) + `report-pdf.tsx`(react-pdf, Noto Sans KR) + Resend 메일. `case_sessions`에 `mentee_report`·`report_status`·`report_sent_at`. UI: SessionCard 리포트 영역(생성·미리보기·PDF·메일). tsx 검증(리포트+PDF 52KB·한글). ⚠️ **SQL 재실행 필요**. dev OOM은 `dev.mjs` 8GB로 완화(프로덕션 무관).
 - (2026-06-13) 리포트 톤 **현직 인사담당자 관점 강화**: report-generator SYSTEM_PROMPT — 멘토=대기업 HR 출신, 각 highlight에 "채용담당자가 서류·면접에서 어떻게 읽는지" 명시, 합니다체 공감형. 검증: "채용담당자는 8D 경험을 ~로 읽습니다" 톤 확연. 메일 from은 `onboarding@resend.dev`(미검증)라 본인 이메일만 — 도메인 검증 시 해소(코드 무관).
 - (2026-06-13) **S1/S2 리포트 구조 재설계**: `S1GroupCard` + `S2ExperienceMapping` + `RoadmapInfo` 인터페이스 추가. S1=그룹별 카드(fit_summary·appeal_points·approach_tips·hr_read), S2=경험×그룹 포지셔닝 매트릭스, 전 회차=로드맵 5단계 인디케이터. report/route.ts에서 S2 생성 시 S1 ai_suggestion 자동 참조. report-pdf.tsx에 GroupCards·ExperienceMatrix·Roadmap 컴포넌트 추가. JourneyPanel.tsx UI 미리보기도 동기화. tsc 에러 0.
+- (2026-06-18) 모듈 13 **멘티 포털(멘티 화면) 신규 — Phase A~C 코드완료·tsc 0**: 이메일 매직링크 인증(`lib/auth` 멘티 헬퍼·`middleware` 멘티 게이트) + `app/mentee/*`(login·dashboard·forms S0~S4) + `app/api/mentee/*`(me·sessions 제출·files·report) + `lib/mentee-portal`(소유권·노출 화이트리스트·직렬화). 멘티 제출 → `case_sessions.mentee_submission` + `assignment_input` 직렬화 → 멘토 JourneyPanel "멘티 초대"·제출 배지로 자동 표시(AI 제안 무수정). SQL `supabase-mentee-portal.sql`(case_sessions 2컬럼·files.session_id, **미적용**). 🔒 FROZEN 읽기조인만 + 전 라우트 소유권 검증. 후속(사장 승인): SQL 적용·라이브 스모크·매직링크 메일.
