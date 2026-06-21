@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-21 08:29 — S1→S2 회차 버그픽스 + 판매분석 툴 + 아침 시장조사 Cron 메일 (프로덕션 배포)
+
+**무엇을**
+- **S1→S2 버그픽스**(`dd1e543`): 회차 PATCH가 `done` 전환 시 다음 회차(seq+1) `locked→assignment_pending` 연쇄. 멘티 화면 잠금을 순차전용으로 보정(레거시 데이터 즉시 해제)+표시상태 보정. (멘토는 순차검사라 정상, 멘티 화면만 막혀 있던 증상)
+- **판매분석 툴**(`aa10e3b`): `/admin/finance` 확장 — `SalesAnalysis`(현황분석 버튼→`/api/finance/commentary` 영업·사업개발 관점 AI 코멘트 + 상품×월 매트릭스·상품필터). `lib/finance-data` 집계헬퍼(`financeSummary`·`productMonthMatrix`)·`FINANCE_SALES`(상품×월, 원본 입수 시)·`/api/finance` OWNER_ONLY.
+- **아침 시장조사 Cron 메일**(`6b51d74`): `vercel.json` crons 08:00 KST → `/api/cron/market-research`(CRON_SECRET 검증) → Claude `web_search` 3C/4P(고객·경쟁·4P·트렌드, 출처·증거등급) + 내부 판매현황 → `sendMail(OWNER_COPY)`. 미들웨어 `/api/cron/` 공개(라우트 자체 검증), 웹검색 불가 시 폴백.
+
+**왜**
+- 사장 3건 지시(멘토링 회차 버그·재무→판매분석 툴화·L-0010 아침 시장조사 자동화). 플랜 승인 후 구현.
+
+**영향 / 후속**
+- 🔒 FROZEN `lib/anthropic` 미접촉(신규 Anthropic 클라이언트). DB 스키마 변경 없음. tsc 0·next build 0.
+- 사장 선행조건: Vercel 환경변수 `CRON_SECRET` 추가(아침 메일 인증) · 크몽 매출내역 `.xls` 재첨부(상품×월 매트릭스). L-0010 검증=첫 아침메일 수신.
+
+**커밋**: `admin-tool` `dd1e543`(A)·`aa10e3b`(C)·`6b51d74`(B) — 전부 main 배포
+
+---
+
 ## 2026-06-21 07:48 — 상품 카탈로그·재무 대시보드·멘토 편집·메일 정비 + /standup 오더 처리 (프로덕션 배포)
 
 **무엇을**
