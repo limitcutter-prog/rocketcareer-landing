@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-06-22 12:34 — 멘티 동의 게이트 + 조직 결과리포트(오더→AI 구조화)
+
+**무엇을**
+- **멘티 동의 게이트**(`eeff0c0`): 멘티 포털 첫 진입 시 개인정보 동의 + '1회성 아닌 단계 프로그램' 안내 → 동의 전 대시보드 차단. `case_journeys.mentee_consented_at`(`supabase-mentee-consent.sql`, 미적용 시 graceful).
+- **조직 결과리포트**(`8789133`): 기존 콘솔이 오더를 LEDGER '지시'만 기록(처리·피드백 0·dev전용·파일기반)이라 사장이 GUI 피드백을 못 받던 문제 규명 → `/admin/orders`(OWNER_ONLY): 오더 입력 → 분신(COO) AI가 **현상·문제·원인→목적/목표→가용자원→이해관계→액션플랜→다음한수** 구조화 → Supabase Storage 저장·열람. `lib/org-orders`·`/api/orders`.
+
+**왜**
+- 사장: 멘티 법적동의+교육 요구 / "조직 GUI에서 리포트 피드백이 왜 안 오나"(원인=콘솔은 등록만, 처리는 /order=채팅뿐) → 프로덕션 결과리포트 기능 신설.
+
+**영향 / 후속**
+- ⬜ 사장: `supabase-mentor-onboarding.sql`·`supabase-mentee-consent.sql` 적용. 디스크 정리(C: 98%·.next 캐시 손상 반복).
+- 잔여: 멘토 온보딩 단계 상태 어드민 표시(폴리시). tsc 0·build 0. 🔒 FROZEN 미접촉.
+
+**커밋**: `admin-tool` `eeff0c0`(멘티동의)·`8789133`(조직 결과리포트)
+
+---
+
 ## 2026-06-22 10:33 — 시장조사 504 해결(Haiku) + 멘토 온보딩 단계 게이트 + BCC 진단
 
 **무엇을**
