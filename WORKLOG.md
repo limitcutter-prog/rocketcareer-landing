@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-22 09:50 — 시장리포트 누적 Storage 전환 + 멘토 온보딩 톤 + 세무 조직 신설
+
+**무엇을**
+- **#2 시장리포트 누적**(`9fc071e`): `market_reports` 테이블 의존 제거 → **Supabase Storage**(`market-reports` 버킷 `index.json`, 최근 50). `saveMarketReport`/`listMarketReports` 서비스롤 처리(사장 SQL 불필요). 누적 안 되던 원인=테이블 미적용 → 해소. `supabase-market-reports.sql` 삭제.
+- **#1 멘토 온보딩 톤**(`9fc071e`): 현직 인사담당자 전문 톤 재작성(GPT느낌·이모지 제거). **세무 안내 제거** → 세무 조직 정비 후 재반영(L-0015).
+- **#3 세무 조직 신설**(org, file-only): `.claude/agents/tax-advisor.md`(경영지원실 산하 세무 전문위원 — 한국 세법 지식 + 사업구조 접지) + ORG_CHART·management-support-head·OBJECTIVES·IMPACT_MAP 동기화.
+
+**왜**
+- 사장 후속 3건: 누적 미동작(테이블 의존)·온보딩 톤·세무 전문 조직화("사업목표 sync" 지시).
+
+**영향 / 후속**
+- 누적이 DDL 없이 동작(서비스롤 storage). tsc 0·next build 0. 🔒 FROZEN 미접촉.
+- 후속: #8 상품명 정합·진단 가격제거 → #5 멘토 PR 게시판 → #3-운영체계(콘솔 결과리포트 뷰). 온보딩 세무 안내는 `tax-advisor` 검토 후 재반영.
+
+**커밋**: `admin-tool` `9fc071e` / org·agents 동기화(untracked)
+
+---
+
 ## 2026-06-21 14:03 — /order 배치: 시장리포트 어드민·멘토 온보딩·메뉴정비 + 배포 블로커(CRON_SECRET)
 
 **무엇을**
