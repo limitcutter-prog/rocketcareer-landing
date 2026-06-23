@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-23 19:12 — 오더 운영 루프 프로덕션 자율화 (모듈14 v2, Supabase 단일화)
+
+**무엇을**
+- **진단**: 사장 질문 규명 — ① '오더 보고'는 분신 AI 1회 호출(advisory)이라 "다음 한 수"를 글로만 적음(실행권·도구·write-back 0). ② '오더 보고'(Storage·prod)와 '조직운영 오더보드'(파일 LEDGER·dev전용)는 데이터 분리. ③ 상태 버튼=LEDGER 표 상태칸만 변경(실행 무관, 실행은 채팅 /order뿐).
+- **P1**: 오더 SoT를 Supabase로 — `supabase-org-orders.sql`(org_orders·org_order_events). `lib/org-orders` Storage→테이블(risk게이트·스레드). API `/api/orders` POST + `[id]` PATCH·revise(수정오더→재분석 스레드). `/admin/orders` 상태 pill·수정오더/의견·action 토글.
+- **P2**: 칸반 보드 뷰(드래그 전이)·`dispatch`(액션→본부 배정 자식). **채팅 단일화** `scripts/orders-cli.mts`(`npm run orders`)+order/standup/org-audit·PROTOCOL·IMPACT_MAP를 org_orders 기준 갱신. `org/LEDGER.md` 동결 배너.
+- **P3**: 서버사이드 자율 실행 `lib/org-personas`(본부 임베드)+`lib/org-execute`(실행 sonnet+교차검수 haiku, 다른 부서)→완료/반려. `/api/orders/[id]/execute`. 고위험·FROZEN 자동 차단(승인대기).
+
+**왜**
+- 사장 결정(2026-06-23): 범위=3단계(자율 실행)까지·실행엔진 정합=Supabase 단일화. L-0012(조직운영 결과리포트 실제 실행)·L-0019 충족 — 이후 추적은 org_orders.
+
+**영향 / 후속**
+- 검증: tsc 0·next build 0·orders-cli 로드/연결 OK(테이블 미적용 시 graceful). 🔒 FROZEN 미접촉(신규 테이블·라우트·lib).
+- ⬜ **사장 선행: `supabase-org-orders.sql` 적용** 후 라이브 E2E(등록→재분석→발행→실행). 천장: Vercel 60s·라이브툴 없음 → heavy/무인 멀티에이전트=채팅 또는 워커 호스트(3b 미래).
+
+**커밋**: (미커밋)
+
+---
+
 ## 2026-06-23 10:02 — 멘티 교육화면 테스트계정 + 오더보고 드롭다운 + 상단메뉴 그룹핑
 
 **무엇을**
