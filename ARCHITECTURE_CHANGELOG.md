@@ -6,6 +6,10 @@
 
 ---
 
+## 2026-06-26 (**어드민 상품관리 ↔ 랜딩 상품카드 정합** — `/admin/products`(products 테이블)가 메인 사이트 랜딩 상품 카드와 매칭 안 됨. 진단: ① 랜딩 동기화가 **가격만** 덮어써 어드민 제목·소개 편집이 사이트에 무반영, ② 어드민 제목('경력기술서 작성')과 카드 제목('연봉·경력 더 인정 받는 경력기술서 Value-up') 드리프트로 식별 불가, ③ 랜딩 카드 6개 중 '대기업 서류+면접 자소서'(90,000)는 `data-product-key` 없어 관리 불가·어드민 `package`(188,000)는 대응 카드 없는 고아. 결정(사장): 범위=제목+소개+가격 전체 / 현재 어드민 가격이 정답 / 미매칭 카드는 새 키 등록. 조치: ① `public/landing.html` 동기화 JS 확장 — 가격에 더해 `.service-title`·`.service-desc`를 `el.closest('.service-card')`로 찾아 DB title·intro로 치환(실패 시 정적 폴백), 카드#3에 `data-product-key="package-doc"` 추가, 정적 폴백가 정합(makeup 170k·coverletter 88k·salary 50k). ② DB 정합(사장 승인, service-role) — 5개 기존 상품 title·intro를 랜딩 카피로, interview price null→109,000, sort_order 시각순, `package-doc` 신규(90,000), `package` is_public=false. `supabase-products-sync.sql`(멱등)·`supabase-products.sql`(시드) 동기 반영. ③ 어드민 안내문 갱신(사이트 실시간 반영·시작가 명시). 결과: 공개 상품 6개 ↔ 랜딩 카드 6:6 1:1, 어드민이 카드 제목·소개·가격 단일원천. preview 검증 통과(콘솔 에러 0). 🔒 FROZEN·가격 외 변경 없음)
+
+---
+
 ## 2026-06-25 (**sync-arch 토큰 최적화 — 변경 이력 아카이브 분리** — sync마다 토큰 폭증(ARCHITECTURE.md `마지막 업데이트` 1줄이 ~1.4만 자·27건 누적, 작업 전 필수 읽기라 전 작업에 과금) 해소. ① ARCHITECTURE.md 변경이력을 `ARCHITECTURE_CHANGELOG.md`로 분리 — 본문엔 `마지막 업데이트` 1줄 + `최근 변경` 3건 요약만(line7 13,958→248자·파일 65.8K→50.3K). ② WORKLOG.md 43블록 → 최근 5개만 유지, 38블록 `WORKLOG_ARCHIVE.md`로 이동(47.6K→5.2K). ③ `/sync-arch` 스킬 갱신: 토큰 절약 원칙(아카이브 비독·ARCHITECTURE/WORKLOG는 head·limit·Grep로만)·CHANGELOG 분리 절차·WORKLOG 로테이션 스크립트(UTF-8 no BOM, `Get-Content` ANSI 함정 주석). 데이터 손실 0(git·아카이브 보존). 🔒 FROZEN·코드 미접촉)
 
 ---

@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-06-26 17:44 — 어드민 상품관리 ↔ 랜딩 상품카드 정합
+
+**무엇을**
+- 랜딩 동기화 JS(`public/landing.html`)를 가격만 → **제목·소개·가격 전체** 치환으로 확장(`closest('.service-card')`), 카드#3에 `data-product-key="package-doc"` 추가, 정적 폴백가 정합(makeup 170k·coverletter 88k·salary 50k).
+- DB 정합(사장 승인·service-role): 5개 상품 title·intro를 랜딩 카피로, interview price null→109,000, sort_order 시각순, `package-doc` 신규(90,000), `package` is_public=false. `supabase-products-sync.sql`(멱등)+시드 `supabase-products.sql` 반영.
+- 어드민 안내문 갱신(`products/page.tsx`): 사이트 실시간 반영·시작가 명시.
+
+**왜**
+- 어드민 상품관리가 메인 사이트 상품 카드와 매칭 안 됨(가격만 동기화·제목 드리프트·미매칭 카드/고아 상품). 어드민을 카드의 단일원천으로 정렬.
+
+**영향 / 후속**
+- 공개 상품 6 ↔ 랜딩 카드 6:6 1:1. 어드민 편집이 즉시 카드에 반영. preview 검증 통과(콘솔 에러 0).
+- ⚠️ 랜딩 배포 시 DB 정합이 선행돼야 함(이미 라이브 적용됨). title 평문화로 수동 `<br/>` 줄바꿈은 CSS 자동 줄바꿈으로 대체(경미).
+- 🔒 FROZEN 미접촉. 가격 외 변경 없음(interview만 null→표시값 109k).
+
+**커밋**: `admin-tool` `a65f814` / `landing` (이 sync 문서)
+
+---
+
 ## 2026-06-25 23:35 — sync-arch 토큰 최적화 (이력 아카이브 분리)
 
 **무엇을**
@@ -74,22 +93,3 @@
 - ⬜ 사장: `supabase-mentor-onboarding.sql`(pledge·ack 컬럼) 적용(기록·게이트 활성)·**노무사/세무사 1회 검토**(초안)·정산 방식(고정액/%) 확정 시 ⑤ 대가 문구 반영.
 
 **커밋**: `admin-tool` `2395d9c` / `landing` (이 sync 문서)
-
----
-
-## 2026-06-23 22:36 — 오더 루프 라이브 검증·배포 + 후속 보완
-
-**무엇을**
-- **배포**: `supabase-org-orders.sql` 적용(사장) 후 `admin-tool` main FF 푸시 — `05d6e02`(루프)·`b61a76a`(parseJson)·`539a426`(보완). Vercel 프로덕션.
-- **라이브 스모크 통과**(실제 prod 테이블): 등록→고위험차단→재분석 스레드→본부 배정→자율 실행+교차검수(sales→검수 bizdev) 한 바퀴, 테스트행 자동 삭제.
-- **버그픽스**: `parseJson`이 JSON 뒤 산문에 깨져 재분석 보고서가 비던 문제 → 중괄호 매칭으로 첫 객체만 파싱(`b61a76a`).
-- **후속 보완**(`539a426`): ① isHighRisk '배포/인증' 오탐 정제(명백키워드+구체문맥 분리, 검증 7/7). ② 자율실행 한도 60s→300s·timeout/토큰 상향(무거운 오더 수용). ③ `/admin/orders` 오더 카드 기본 접힘(collapsible).
-
-**왜**
-- 사장 "전부 해" → SQL 적용·배포·라이브 검증. 스모크가 parseJson 버그 발견. 사장 후속요청: 오탐 다듬기·카드 접기·한도 확대.
-
-**영향 / 후속**
-- tsc 0·build 0·스모크 PASS. 🔒 FROZEN 미접촉.
-- ⬜ 진짜 무인 멀티스텝(heavy) = 워커 호스트(3b, Railway/Render) 사장 인프라 결정 대기. root 문서 푸시는 가드레일로 보류 가능.
-
-**커밋**: `admin-tool` `05d6e02`·`b61a76a`·`539a426` (main 배포) / `landing` (이 문서·org)

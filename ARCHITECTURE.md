@@ -4,12 +4,12 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-25 — sync-arch 토큰 최적화 (변경 이력 아카이브 분리)
+마지막 업데이트: 2026-06-26 — 어드민 상품관리 ↔ 랜딩 상품카드 정합(제목·소개·가격 SoT)
 
 **최근 변경** (전체 이력 → `ARCHITECTURE_CHANGELOG.md`):
+- 2026-06-26 어드민 products = 랜딩 상품카드 단일원천(제목·소개·가격 동기화) + 카탈로그 6:6 정합
 - 2026-06-25 sync-arch 토큰 최적화 — 변경 이력·WORKLOG 아카이브 분리
 - 2026-06-25 아침 시장메일 동적화 + 랜딩↔어드민 상품가격 동기화
-- 2026-06-25 랜딩+admin-tool 코드병합 1단계 + 오더리포트 JSON 복구
 
 ---
 
@@ -25,7 +25,7 @@
 | 6 | 멘토 관리 | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/mentors/` |
 | 7 | 영상 자동생성 (**로컬 Remotion 렌더** + TTS 나레이션) | ✅ ACTIVE | — | `admin-tool/scripts/make-case.mts`(로컬 렌더, 권장), `lib/marketing/casefile-pipeline.ts`, `tts-generator.ts`, `admin-tool/remotion/` (CaseFileVideo v7). Lambda(`video-generator.ts`)는 잔존하나 serveUrl 구형 |
 | 8 | 멘토 인코딩 DB | ✅ ACTIVE | encoding-agent | `Mento_incoding_casedb_project/henry-casedb/` |
-| 9 | 랜딩페이지 | ✅ ACTIVE (SoT=admin-tool/public, 병합 2026-06-25) | landing-agent | **SoT** `admin-tool/public/landing.html`+`style.css`(`/` 서빙·상품가격 `/api/showcase/products` 동적 동기화) / 루트 `index.html`·`style.css`=레거시(도메인 이전 후 폐기) |
+| 9 | 랜딩페이지 | ✅ ACTIVE (SoT=admin-tool/public, 병합 2026-06-25) | landing-agent | **SoT** `admin-tool/public/landing.html`+`style.css`(`/` 서빙·상품 카드 **제목·소개·가격** 모두 `/api/showcase/products`로 동적 동기화 — 어드민 `products`가 카드 SoT, `data-product-key` 6:6 매칭) / 루트 `index.html`·`style.css`=레거시(도메인 이전 후 폐기) |
 | 10 | Phase C (Auth/포털) | 🔶 표면 구현·Auth전환 대기 | — | `admin-tool/app/mentor/`(모듈12)·`admin-tool/app/mentee/`(모듈13) |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
 | 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07) | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
