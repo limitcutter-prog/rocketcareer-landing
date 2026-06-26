@@ -4,12 +4,12 @@
 > 상세 구현은 각 모듈의 `CLAUDE.md` 참조.
 > `admin-tool/` 기준 작업 시 ARCHITECTURE.md 경로: `../ARCHITECTURE.md`
 
-마지막 업데이트: 2026-06-26 — 어드민 상품관리 ↔ 랜딩 상품카드 정합(제목·소개·가격 SoT)
+마지막 업데이트: 2026-06-26 — 멘토 셀프 어필 지면(블록) + 매칭검토(사장 승인)
 
 **최근 변경** (전체 이력 → `ARCHITECTURE_CHANGELOG.md`):
+- 2026-06-26 멘토 셀프 지면(mentor_blocks·풀페이지·메인 스포트라이트) + 매칭검토(사장 승인 단독)
 - 2026-06-26 어드민 products = 랜딩 상품카드 단일원천(제목·소개·가격 동기화) + 카탈로그 6:6 정합
 - 2026-06-25 sync-arch 토큰 최적화 — 변경 이력·WORKLOG 아카이브 분리
-- 2026-06-25 아침 시장메일 동적화 + 랜딩↔어드민 상품가격 동기화
 
 ---
 
@@ -28,7 +28,7 @@
 | 9 | 랜딩페이지 | ✅ ACTIVE (SoT=admin-tool/public, 병합 2026-06-25) | landing-agent | **SoT** `admin-tool/public/landing.html`+`style.css`(`/` 서빙·상품 카드 **제목·소개·가격** 모두 `/api/showcase/products`로 동적 동기화 — 어드민 `products`가 카드 SoT, `data-product-key` 6:6 매칭) / 루트 `index.html`·`style.css`=레거시(도메인 이전 후 폐기) |
 | 10 | Phase C (Auth/포털) | 🔶 표면 구현·Auth전환 대기 | — | `admin-tool/app/mentor/`(모듈12)·`admin-tool/app/mentee/`(모듈13) |
 | 11 | 리포트/PDF/Sheets | ✅ ACTIVE | admin-upload-agent | `admin-tool/app/api/generate-pdf/`, `app/api/sheets/`, `lib/pdf.ts` |
-| 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07) | — (미지정) | `admin-tool/app/showcase/`, `app/mentor/`, `app/api/{showcase,mentor}/`, `supabase-marketplace-*.sql` |
+| 12 | 멘토링 마켓플레이스 (양면) | ✅ ACTIVE (배포 2026-06-07, **멘토 셀프지면+매칭검토 2026-06-26**) | — (미지정) | `admin-tool/app/showcase/`(+`mentors/[id]` 풀페이지·`MentorBlocks`), `app/mentor/`(지면 에디터), `app/admin/matches`(매칭검토), `app/api/{showcase,mentor,matches}/`, `supabase-marketplace-*.sql`+`supabase-mentor-showcase.sql` |
 | 13 | 멘토링 운영 (딜리버리) | ✅ 2단계 배포 (2026-06-13, `5d3e1d0`) — 리포트 react-pdf | — (미지정) | `admin-tool/app/admin/mentees/[id]/JourneyPanel.tsx`, `app/api/mentees/[id]/journey/`, `lib/mentoring/`, `supabase-mentoring-ops-setup.sql` |
 | 14 | AI 운영체계 (자율 협업) + 오더 루프 | ✅ ACTIVE (오더 SoT=Supabase, 2026-06-23) | chief-of-staff·career-lab-lead·6본부장 | **오더 SoT** `org_orders`/`org_order_events`(`supabase-org-orders.sql`) ↔ 웹 `app/admin/orders/`·`app/api/orders/*`(POST·`[id]` PATCH·revise·dispatch·execute)·`lib/org-{orders,personas,execute}` ↔ 채팅 `scripts/orders-cli.mts`. 설정 SoT(파일) `org/`(PROTOCOL·IMPACT_MAP·CHARTER·OBJECTIVES·ORG_CHART·state·**LEDGER=동결**), `.claude/agents/*-head.md`, `.claude/commands/{order,standup,strategy-review,org-audit}.md`, **설정 콘솔(dev)** `admin-tool/app/admin/org/`·`app/api/org/`·`lib/org/` |
 
