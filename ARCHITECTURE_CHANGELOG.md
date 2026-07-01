@@ -14,6 +14,10 @@
 
 ---
 
+## 2026-07-01 (**멘토링 S0~S4 멘티 입력·AI 반영 개선 10건 (모듈13)** — 사장 요청: 멘티가 회차 입력에서 충분한 정보를 남기고 그게 AI 요약(그룹화·합리화·리포트)에 빠짐없이 반영되게. ① 메일: 초대/로그인 링크 '7일 유효' 문구 제거 + 초대 메일에 5단계 네비·단계별 가이드(인사담당자 톤). ② 멘티 포털 넓은 2단 레이아웃(max-w-5xl) + '시작 전 안내' 인사담당자 톤 재작성 + 진행단계 안내. ③ S1: 끌린 이유 4분리(당장/배움/5년/10년) + 채용공고·마감 분리 + 빨간 작성가이드(공고 필수 이유) + 최악상황 문구. ④ S2: '무엇에 기여했나' 카테고리(직무경험·역량·지식·태도·인성)+설명 다중 추가 + 작성가이드. ⑤ S3: 문서유형 분기 — 경력기술서=회사>대분류>중분류>소분류 무한추가 트리 / 자기소개서=작성가이드(지원동기·장단점·핵심역량)+초안. 멘토가 S2에서 `case_journeys.doc_type` 지정(미설정 시 신입=자소서·경력=경력기술서 트랙 기본값). ⑥ **병목 `serializeSubmission`에 전 필드 반영** → group-suggest·experience-suggest·report-generator에 누락 없이 전달. SubmissionView(멘토 뷰)·AI 프롬프트 2종 동기화. `app/mentee/{forms,page}`·`lib/mentee-portal`·`JourneyPanel`·`SubmissionView`·journey route(doc_type 화이트리스트)·메일 2종·`edbeb45`. 🔒 FROZEN 미접촉·case_* 신규 컬럼만. tsc 0·build 0. ⬜ 사장: `supabase-mentoring-doctype.sql` 1줄 적용 시 멘토 명시 지정 활성)
+
+---
+
 ## 2026-06-25 (**sync-arch 토큰 최적화 — 변경 이력 아카이브 분리** — sync마다 토큰 폭증(ARCHITECTURE.md `마지막 업데이트` 1줄이 ~1.4만 자·27건 누적, 작업 전 필수 읽기라 전 작업에 과금) 해소. ① ARCHITECTURE.md 변경이력을 `ARCHITECTURE_CHANGELOG.md`로 분리 — 본문엔 `마지막 업데이트` 1줄 + `최근 변경` 3건 요약만(line7 13,958→248자·파일 65.8K→50.3K). ② WORKLOG.md 43블록 → 최근 5개만 유지, 38블록 `WORKLOG_ARCHIVE.md`로 이동(47.6K→5.2K). ③ `/sync-arch` 스킬 갱신: 토큰 절약 원칙(아카이브 비독·ARCHITECTURE/WORKLOG는 head·limit·Grep로만)·CHANGELOG 분리 절차·WORKLOG 로테이션 스크립트(UTF-8 no BOM, `Get-Content` ANSI 함정 주석). 데이터 손실 0(git·아카이브 보존). 🔒 FROZEN·코드 미접촉)
 
 ---

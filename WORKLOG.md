@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-07-01 20:42 — 멘토링 S0~S4 멘티 입력·AI 반영 개선 10건 (모듈13)
+
+**무엇을**
+- 메일 2종 '7일 유효' 문구 제거 + 초대 메일 5단계 네비·가이드(인사담당자 톤). 포털 '시작 전 안내' 인사담당자 톤 재작성 + 진행단계 안내.
+- 멘티 포털 넓은 2단 레이아웃(max-w-5xl). S1: 끌린 이유 4분리(당장/배움/5년/10년) + 채용공고·마감 분리 + 빨간 작성가이드 + 최악상황 문구. S2: '무엇에 기여했나' 카테고리+설명 다중 추가 + 작성가이드.
+- S3 문서유형 분기: 경력기술서=회사>대>중>소 무한추가 트리 / 자소서=가이드+초안. 멘토가 S2에서 `case_journeys.doc_type` 지정(미설정 시 신입=자소서·경력=경력기술서).
+- **병목 `serializeSubmission`에 전 필드 반영** → group-suggest·experience-suggest·report-generator 누락 없이 전달. SubmissionView(멘토 뷰)·AI 프롬프트 2종 동기화.
+
+**왜**
+- 사장: 멘티가 회차 입력에서 정보를 충분히 남기고, 그게 AI 요약(그룹화·합리화·리포트)에 빠짐없이 반영되게. 안내 문구는 클로드스럽지 않게 인사담당자 톤으로.
+
+**영향 / 후속**
+- tsc 0·next build 0·main FF 배포(`edbeb45`). 🔒 FROZEN 미접촉·case_* 신규 컬럼만.
+- ⬜ 사장: `supabase-mentoring-doctype.sql` 1줄 적용 시 멘토 명시 문서유형 지정 활성(미적용 시 트랙 기본값으로 정상). 프리뷰는 인증 게이트라 배포 후 테스트 멘티로 스모크 권장.
+
+**커밋**: `admin-tool` `edbeb45` / `landing` (이 sync 문서)
+
+---
+
 ## 2026-06-26 18:41 — 멘토 셀프 어필 지면 + 매칭검토(사장 승인)
 
 **무엇을**
@@ -75,20 +94,3 @@
 - (참고) 가격은 페이지 로드시 client fetch로 갱신(짧은 깜빡임) — 무깜빡임·SEO는 2단계 React 변환 시 서버렌더.
 
 **커밋**: `admin-tool` `15110e9`·`22a5b82`(시장메일)·`ef9dabd`(상품동기화) / `landing` (이 sync 문서)
-
----
-
-## 2026-06-25 15:10 — 랜딩+admin-tool 코드병합 1단계 + 오더리포트 JSON 복구
-
-**무엇을**
-- **랜딩 흡수(코드병합 1단계)**(`97f2772`): 정적 랜딩(루트 `index.html`+`style.css`)을 admin-tool `public/landing.html`·`style.css`로 흡수. `next.config` beforeFiles rewrite `/`→`/landing.html`(다른 경로 불변). 랜딩의 `admin-tool-cyan` 절대URL→상대경로(`/showcase`·`/api/submit-diagnosis`: 같은 origin·CORS 제거). **prod 검증**: `/`=랜딩(200)·`/showcase` 200·`/admin` 307→login·`/style.css` 200.
-- **오더 결과리포트 JSON 잘림 복구**(`ea52c3f`): 복합 오더에서 분신 AI JSON이 max_tokens에서 잘려 'Unterminated string' 파싱실패 → `repairTruncatedJson` 폴백 추가(`org-orders`·`org-execute` 공통)+토큰 2000→2600·timeout 48s·retry 0. prod 검증: 8액션 리포트 정상 생성.
-
-**왜**
-- 사장: 두 Vercel 프로젝트(정적 랜딩+Next admin-tool) 통합 결정 → 분석 후 '코드병합>프록시·1단계 안전 실행' 추천대로 진행. / 어드민 오더 리포트 생성 오류 신고.
-
-**영향 / 후속**
-- ⬜ 사장: 도메인 `rocketcareer.co.kr`을 admin-tool 프로젝트로 이전(Vercel Domains·무중단) → 단일 사이트 완성. 이전 전엔 `admin-tool-cyan.vercel.app/`에서 랜딩 프리뷰.
-- (선택, 2단계) 랜딩 React/Tailwind 정식 변환. 랜딩 repo 원본 무변경(흡수만). tsc 0·build 0·🔒 FROZEN 미접촉.
-
-**커밋**: `admin-tool` `ea52c3f`(JSON복구)·`97f2772`(랜딩병합)

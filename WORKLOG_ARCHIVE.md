@@ -6,6 +6,23 @@
 
 ---
 
+## 2026-06-25 15:10 — 랜딩+admin-tool 코드병합 1단계 + 오더리포트 JSON 복구
+
+**무엇을**
+- **랜딩 흡수(코드병합 1단계)**(`97f2772`): 정적 랜딩(루트 `index.html`+`style.css`)을 admin-tool `public/landing.html`·`style.css`로 흡수. `next.config` beforeFiles rewrite `/`→`/landing.html`(다른 경로 불변). 랜딩의 `admin-tool-cyan` 절대URL→상대경로(`/showcase`·`/api/submit-diagnosis`: 같은 origin·CORS 제거). **prod 검증**: `/`=랜딩(200)·`/showcase` 200·`/admin` 307→login·`/style.css` 200.
+- **오더 결과리포트 JSON 잘림 복구**(`ea52c3f`): 복합 오더에서 분신 AI JSON이 max_tokens에서 잘려 'Unterminated string' 파싱실패 → `repairTruncatedJson` 폴백 추가(`org-orders`·`org-execute` 공통)+토큰 2000→2600·timeout 48s·retry 0. prod 검증: 8액션 리포트 정상 생성.
+
+**왜**
+- 사장: 두 Vercel 프로젝트(정적 랜딩+Next admin-tool) 통합 결정 → 분석 후 '코드병합>프록시·1단계 안전 실행' 추천대로 진행. / 어드민 오더 리포트 생성 오류 신고.
+
+**영향 / 후속**
+- ⬜ 사장: 도메인 `rocketcareer.co.kr`을 admin-tool 프로젝트로 이전(Vercel Domains·무중단) → 단일 사이트 완성. 이전 전엔 `admin-tool-cyan.vercel.app/`에서 랜딩 프리뷰.
+- (선택, 2단계) 랜딩 React/Tailwind 정식 변환. 랜딩 repo 원본 무변경(흡수만). tsc 0·build 0·🔒 FROZEN 미접촉.
+
+**커밋**: `admin-tool` `ea52c3f`(JSON복구)·`97f2772`(랜딩병합)
+
+---
+
 ## 2026-06-24 23:42 — 멘토 온보딩 규제 방어 5단계 (용역계약/윤리서약 분리)
 
 **무엇을**
